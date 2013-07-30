@@ -110,9 +110,9 @@ var makeFullData = function(numberStudents, avgActions){
          var JSONEntry = {}
          JSONEntry['username']=names[Math.floor(Math.random()*names.length)]
          JSONEntry['event_type']=generateEventType(JSONEntry['username'])
-         JSONEntry['timestamp']=timestamps[i].toJSON()
+         JSONEntry['time']=timestamps[i].toJSON()
          finalList.push(JSONEntry)
      }
     $('.textholder').text(JSON.stringify(finalList))
-    return finalList
+    return JSON.stringify(finalList)
 }
