@@ -1,0 +1,18 @@
+.chart {
+	border: 1px solid gray;
+}
+
+.chart rect {
+	stroke: white;
+}
+
+.chart text {
+	font: 10px sans-serif;
+}
+
+.chart .bar-label {
+	fill: white;
+}
+.chart line {
+	stroke: #ccc;
+}
