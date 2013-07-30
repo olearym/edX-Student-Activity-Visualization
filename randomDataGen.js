@@ -37,9 +37,9 @@ var generateTimestamp= function(){
 
 var generateNames = function(numberOfNames){
     var names = []
-    var firstNames=["John","Rob", "James", "Dylan", "Rocky", "Carolyn", "Megan", "Sue", "Sally", "Michelle"]
-    var middleInitial= [ "A","B","C","D","F","G"]
-    var lastNames =["Jacobs", "Robertson", "Nguyen", "Jordan", "Kim", "O'Ryan", "McDonald","Heaton","Wiggins"]
+    var firstNames=["John","Rob", "James", "Dylan", "Rocky", "Carolyn", "Megan", "Sue", "Sally", "Michelle", "Christopher", "Jamie", "Madison", "Malcolm","Ryan"]
+    var middleInitial= [ "A","B","C","D","F","G","H","I","J","K","L","M","N","O","P"]
+    var lastNames =["Jacobs", "Robertson", "Nguyen", "Jordan", "Kim", "O'Ryan", "McDonald","Heaton","Wiggins", "Reynolds", "Jackson", "Pierz", "Welsh","Wallace"]
     for (var i=0;i<numberOfNames;i++){
         var randFirst = firstNames[Math.floor(Math.random()*firstNames.length)]
         var randInit = middleInitial[Math.floor(Math.random()*middleInitial.length)]
