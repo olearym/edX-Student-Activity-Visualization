@@ -43,12 +43,28 @@ var data_process = (function() {
 				first_event = looped_event
 			}
 		}
+		first_event.setMinutes(0)
+		first_event.setSeconds(0)
+		first_event.setMilliseconds(0)
+
+		var last_event = new Date(events[0][events[0].length - 1].time);
+		for (var index = 1; index < events.length; index++) {
+			var looped_event = new Date(events[index][events[index].length - 1].time)
+			if (looped_event.getTime() > last_event.getTime()) {
+				last_event = looped_event
+			}
+		}
+		last_event.setMinutes(0)
+		last_event.setSeconds(0)
+		last_event.setMilliseconds(0)
+		var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
 		
 		for (var index = 0; index < events.length; index++) {
+			var hour_count = 0
 			var events_by_hour = {};
 			var num_events = [];
 			var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
-
+			var extra_hours = Math.floor((last_event.getTime() - new Date(events[index][events[index].length - 1].time).getTime())/(1000*3600));
 			// make events_by_hour
 			// looks like {"date" : {0: [...], 1: [...], ...}}
 			for (var i = 0; i < events[index].length; i++) {
@@ -74,31 +90,44 @@ var data_process = (function() {
 			//fills array with "y" values, each "y" value corresponds to an hour
 			for (var i = 0; i < hour_offset; i++) {
 				num_events.push({"y": 0 });
+				hour_count += 1
 			}
 			for (var i = 0; i < events[index].length; i++) {
 
 				var current_event = new Date(events[index][i].time)
+				current_event.setMinutes(0)
+				current_event.setSeconds(0)
+				current_event.setMilliseconds(0)
 				var current_event_hour = new Date(events[index][i].time).getHours();
+				var hours_left = Math.floor((last_event.getTime() - current_event.getTime())/(1000*3600))
 
 				if (i == 0) {
 					num_events.push( {"y": 1} );
+					hour_count += 1
 
 				} else {
 
 					var prev_event = new Date(events[index][i-1].time)
-					var prev_event_hour = new Date(events[index][i-1].time).getHours();
+					prev_event.setMinutes(0)
+					prev_event.setSeconds(0)
+					prev_event.setMilliseconds(0)
+					var ms_diff = Math.abs(current_event.getTime() - prev_event.getTime());
+					var diffHours = Math.floor(ms_diff / (1000 * 3600))
 
-					if (current_event_hour == prev_event_hour) {
+					if (current_event.getHours() == prev_event.getHours() && diffHours == 0) {
 						num_events[num_events.length - 1]["y"] += 1;
+
 					} else {
-						var ms_diff = Math.abs(current_event.getTime() - prev_event.getTime());
-						var diffHours = Math.floor(ms_diff / (1000 * 3600))
 						if (diffHours > 1) {
+							var count = 0
 							for (var j = 1; j < diffHours; j++) {
 								num_events.push( {"y": 0} );
+								count+=1
+								hour_count += 1
 							}
-						}
+						} 
 						num_events.push( {"y": 1} );
+						hour_count += 1
 					}
 
 				}
