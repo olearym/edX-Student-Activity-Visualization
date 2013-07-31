@@ -27,68 +27,88 @@ var data_process = (function() {
 		}
 	}
 
-	// takes an array of event objects, formats into an array of objects
-	// associating each event with a day and an hour
+	// takes an array of arrays containing chronologically sorted event objects
+	// returns an array containing arrays of "y" values for each hour for each
+	// array entered. Each entered array contains an array of events of different types.
 	var format_events = function(events) {
 
 		var out = {};
-		var events_by_hour = {};
-		var num_events = [];
+		var stacked_data = []
+		var total_events_by_hour = []
 
-		// make events_by_hour
-		// looks like {"date" : {0: [...], 1: [...], ...}}
-		for (var i = 0; i < events.length; i++) {
-			
-			var event = events[i];
-
-			var event_date = new Date(event.time);
-			var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
-			var event_hour = event_date.getHours();
-
-			if (events_by_hour[event_day] == undefined) {
-				events_by_hour[event_day] = {};
+		var first_event = new Date(events[0][0].time);
+		for (var index = 1; index < events.length; index++) {
+			var looped_event = new Date(events[index][0].time)
+			if (looped_event.getTime() < first_event.getTime()) {
+				first_event = looped_event
 			}
-			if (events_by_hour[event_day][event_hour] == undefined) {
-				for (var j = 0; j < 24; j++) {
-					events_by_hour[event_day][j] = [];
-				}
-			}
-			events_by_hour[event_day][event_hour].push(event);
 		}
+		
+		for (var index = 0; index < events.length; index++) {
+			var events_by_hour = {};
+			var num_events = [];
+			var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
 
-		//make num_events
-		//fills array with "y" values, each "y" value corresponds to an hour
-		for (var i = 0; i < events.length; i++) {
+			// make events_by_hour
+			// looks like {"date" : {0: [...], 1: [...], ...}}
+			for (var i = 0; i < events[index].length; i++) {
+				
+				var event = events[index][i];
 
-			var current_event = new Date(events[i].time)
-			var current_event_hour = new Date(events[i].time).getHours();
+				var event_date = new Date(event.time);
+				var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
+				var event_hour = event_date.getHours();
 
-			if (i == 0) {
-				num_events.push( {"y": 1} );
-
-			} else {
-
-				var prev_event = new Date(events[i-1].time)
-				var prev_event_hour = new Date(events[i-1].time).getHours();
-
-				if (current_event_hour == prev_event_hour) {
-					num_events[num_events.length - 1]["y"] += 1;
-				} else {
-					var ms_diff = Math.abs(current_event.getTime() - prev_event.getTime());
-					var diffHours = Math.floor(ms_diff / (1000 * 3600))
-					if (diffHours > 1) {
-						for (var j = 1; j < diffHours; j++) {
-							num_events.push( {"y": 0} );
-						}
+				if (events_by_hour[event_day] == undefined) {
+					events_by_hour[event_day] = {};
+				}
+				if (events_by_hour[event_day][event_hour] == undefined) {
+					for (var j = 0; j < 24; j++) {
+						events_by_hour[event_day][j] = [];
 					}
-					num_events.push( {"y": 1} );
 				}
-
+				events_by_hour[event_day][event_hour].push(event);
 			}
+
+			//make num_events
+			//fills array with "y" values, each "y" value corresponds to an hour
+			for (var i = 0; i < hour_offset; i++) {
+				num_events.push({"y": 0 });
+			}
+			for (var i = 0; i < events[index].length; i++) {
+
+				var current_event = new Date(events[index][i].time)
+				var current_event_hour = new Date(events[index][i].time).getHours();
+
+				if (i == 0) {
+					num_events.push( {"y": 1} );
+
+				} else {
+
+					var prev_event = new Date(events[index][i-1].time)
+					var prev_event_hour = new Date(events[index][i-1].time).getHours();
+
+					if (current_event_hour == prev_event_hour) {
+						num_events[num_events.length - 1]["y"] += 1;
+					} else {
+						var ms_diff = Math.abs(current_event.getTime() - prev_event.getTime());
+						var diffHours = Math.floor(ms_diff / (1000 * 3600))
+						if (diffHours > 1) {
+							for (var j = 1; j < diffHours; j++) {
+								num_events.push( {"y": 0} );
+							}
+						}
+						num_events.push( {"y": 1} );
+					}
+
+				}
+			}
+			total_events_by_hour.push(events_by_hour)
+			stacked_data.push(num_events)
 		}
 
-		out.num_events = num_events
-		out.events_by_hour = events_by_hour
+		out.stacked_data = stacked_data
+		out.events_by_hour = total_events_by_hour
 		return out;
 
 	}
@@ -103,8 +123,7 @@ var data_process = (function() {
 })();
 
 data_process.process_event_types(generated_data)
-var data = [data_process.format_events(data_process.problem_events).num_events, data_process.format_events(data_process.video_events).num_events]
-console.log(data)
+var data = data_process.format_events([data_process.problem_events, data_process.video_events]).stacked_data
 
 var stacked_chart = (function() {
 

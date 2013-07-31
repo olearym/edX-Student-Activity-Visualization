@@ -1,5 +1,5 @@
 .chart {
-	border: 1px solid gray;
+
 }
 
 .chart rect {
@@ -15,4 +15,10 @@
 }
 .chart line {
 	stroke: #ccc;
+}
+
+.chart-div {
+	width: 90%;
+	overflow: auto;
+	border: 1px solid gray;
 }
