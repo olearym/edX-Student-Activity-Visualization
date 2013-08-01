@@ -250,6 +250,9 @@ var stacked_chart = (function() {
 		    .tickSize(0)
 		    .tickPadding(41)
 
+		chart.selectAll('.x-axis').remove();
+		chart.selectAll('.x-ticks').remove();
+
 		chart.append('g')
 		    .attr('class', 'x-axis')
 		    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
@@ -266,6 +269,8 @@ var stacked_chart = (function() {
 								.enter().append('g')
 									.attr("class", "layer")
 									.style("fill", function(d, i) { return color(i); });
+		var layer_group = chart.selectAll(".layer").data(stacked_data)
+		layer_group.exit().remove()
 
 		var rects = layer_groups.selectAll("rect").data(function(d) { return d; })
 						.enter().append("rect")
@@ -273,20 +278,12 @@ var stacked_chart = (function() {
 							.attr("y", function(d) { return y_scale(d.y0 + d.y)})
 							.attr("width", x_scale.rangeBand())
 							.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
+		var rect = layer_groups.selectAll("rect").data(function(d) { return d; })
+		rect.exit().remove()
+
 	}
 
 	exports.setup = setup;
-
-	var change_graphed_data = function(data) {
-		var layer_groups = d3.select('.chart').selectAll(".layer").data(data)
-		
-		layer_groups.exit().remove()
-
-		var rects = layer_groups.selectAll("rect").data(function(d) { return d; })
-
-		rects.exit().remove()
-	}
-	exports.change_graphed_data = change_graphed_data;
 
 	return exports
 
