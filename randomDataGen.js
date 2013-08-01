@@ -91,12 +91,37 @@ var date_sort_asc = function (date1, date2) {
   return 0;
 };
 
+var generateGrade = function(){
+    var random1to5 = Math.floor(Math.random()*5)+1
+    if (random1to5==1){
+        return 55+(Math.random()*15)
+    }
+    if(random1to5==5){
+        return 85+(Math.random()*15)   
+    }
+    else{
+        return 70+(Math.random()*15)
+    }
+}
+var pickRandomProperty=function(obj) {
+    var result;
+    var count = 0;
+    for (var prop in obj)
+        if (Math.random() < 1/++count)
+           result = prop;
+    return result;
+}
+
 var makeFullData = function(numberStudents, avgActions){
     var names = generateNames(numberStudents)
+    var gradebook = {}
+    for (var i=0;i<names.length;i++){
+        gradebook[names[i]]= generateGrade()
+    }
     var finalList= []
     var timestamps = []
     var times= []
-    for (var i=0; i<names.length;i++){
+    for (var key in names){
         var randomNum = avgActions+(Math.floor(Math.random()*10)-5)
         for (var j= 0;j<randomNum;j++){
             var dateStr = generateTimestamp()
@@ -109,6 +134,7 @@ var makeFullData = function(numberStudents, avgActions){
      for (var i=0;i<timestamps.length;i++){
          var JSONEntry = {}
          JSONEntry['username']=names[Math.floor(Math.random()*names.length)]
+         JSONEntry['grade']=gradebook[JSONEntry['username']]
          JSONEntry['event_type']=generateEventType(JSONEntry['username'])
          JSONEntry['time']=timestamps[i].toJSON()
          finalList.push(JSONEntry)
