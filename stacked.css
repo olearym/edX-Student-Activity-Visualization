@@ -1,5 +1,5 @@
 .chart {
-
+	padding-bottom: 10px;
 }
 
 .chart rect {
@@ -18,7 +18,7 @@
 }
 
 .chart-div {
-	width: 90%;
+	width: 100%;
 	overflow: auto;
 	border: 1px solid gray;
 }

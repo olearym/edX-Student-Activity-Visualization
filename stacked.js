@@ -27,25 +27,29 @@ var data_process = (function() {
 		}
 	}
 
+	var round_date = function(date) {
+		date.setMinutes(0);
+		date.setSeconds(0);
+		date.setMilliseconds(0);
+	}
+
 	// takes an array of arrays containing chronologically sorted event objects
 	// returns an array containing arrays of "y" values for each hour for each
 	// array entered. Each entered array contains an array of events of different types.
 	var format_events = function(events) {
 
 		var out = {};
-		var stacked_data = []
-		var total_events_by_hour = []
+		var stacked_data = [];
+		var total_events_by_hour = [];
 
 		var first_event = new Date(events[0][0].time);
 		for (var index = 1; index < events.length; index++) {
 			var looped_event = new Date(events[index][0].time)
 			if (looped_event.getTime() < first_event.getTime()) {
-				first_event = looped_event
+				first_event = looped_event;
 			}
 		}
-		first_event.setMinutes(0)
-		first_event.setSeconds(0)
-		first_event.setMilliseconds(0)
+		round_date(first_event);
 
 		var last_event = new Date(events[0][events[0].length - 1].time);
 		for (var index = 1; index < events.length; index++) {
@@ -54,17 +58,20 @@ var data_process = (function() {
 				last_event = looped_event
 			}
 		}
-		last_event.setMinutes(0)
-		last_event.setSeconds(0)
-		last_event.setMilliseconds(0)
+		round_date(last_event);
+
 		var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
 		
 		for (var index = 0; index < events.length; index++) {
-			var hour_count = 0
+
 			var events_by_hour = {};
 			var num_events = [];
 			var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
-			var extra_hours = Math.floor((last_event.getTime() - new Date(events[index][events[index].length - 1].time).getTime())/(1000*3600));
+			
+			for (var i = 0; i < first_event.getHours(); i++) {
+				num_events.push({"y":0})
+			}
+
 			// make events_by_hour
 			// looks like {"date" : {0: [...], 1: [...], ...}}
 			for (var i = 0; i < events[index].length; i++) {
@@ -90,27 +97,20 @@ var data_process = (function() {
 			//fills array with "y" values, each "y" value corresponds to an hour
 			for (var i = 0; i < hour_offset; i++) {
 				num_events.push({"y": 0 });
-				hour_count += 1
 			}
 			for (var i = 0; i < events[index].length; i++) {
 
-				var current_event = new Date(events[index][i].time)
-				current_event.setMinutes(0)
-				current_event.setSeconds(0)
-				current_event.setMilliseconds(0)
-				var current_event_hour = new Date(events[index][i].time).getHours();
-				var hours_left = Math.floor((last_event.getTime() - current_event.getTime())/(1000*3600))
+				var current_event = new Date(events[index][i].time);
+				round_date(current_event);
 
 				if (i == 0) {
 					num_events.push( {"y": 1} );
-					hour_count += 1
 
 				} else {
 
-					var prev_event = new Date(events[index][i-1].time)
-					prev_event.setMinutes(0)
-					prev_event.setSeconds(0)
-					prev_event.setMilliseconds(0)
+					var prev_event = new Date(events[index][i-1].time);
+					round_date(prev_event);
+
 					var ms_diff = Math.abs(current_event.getTime() - prev_event.getTime());
 					var diffHours = Math.floor(ms_diff / (1000 * 3600))
 
@@ -119,18 +119,16 @@ var data_process = (function() {
 
 					} else {
 						if (diffHours > 1) {
-							var count = 0
 							for (var j = 1; j < diffHours; j++) {
 								num_events.push( {"y": 0} );
-								count+=1
-								hour_count += 1
 							}
 						} 
 						num_events.push( {"y": 1} );
-						hour_count += 1
 					}
-
 				}
+			}
+			for (var i = 23; i > last_event.getHours(); i--) {
+				num_events.push({"y":0})
 			}
 			total_events_by_hour.push(events_by_hour)
 			stacked_data.push(num_events)
@@ -138,6 +136,8 @@ var data_process = (function() {
 
 		out.stacked_data = stacked_data
 		out.events_by_hour = total_events_by_hour
+		out.first_event = first_event
+		out.last_event = last_event
 		return out;
 
 	}
@@ -153,6 +153,8 @@ var data_process = (function() {
 
 data_process.process_event_types(generated_data)
 var data = data_process.format_events([data_process.problem_events, data_process.video_events]).stacked_data
+var first_event = data_process.format_events([data_process.problem_events, data_process.video_events]).first_event
+var last_event = data_process.format_events([data_process.problem_events, data_process.video_events]).last_event
 
 var stacked_chart = (function() {
 
@@ -177,6 +179,8 @@ var stacked_chart = (function() {
 
 	var x_scale = d3.scale.ordinal()
 					.domain(d3.range(data[0].length)).rangeBands([0, chart_width]);
+	var x_label_scale = d3.time.scale()
+					.domain([first_event, last_event]).range([0, chart_width]).nice(d3.time.day);
 	var y_scale = d3.scale.linear()
 					.domain([0, y_stack_max]).range([chart_height, 0]);
 	var color = d3.scale.linear()
@@ -198,7 +202,8 @@ var stacked_chart = (function() {
 				.attr("x1", 0)
 				.attr("x2", chart_width)
 				.attr("y1", y_scale)
-				.attr("y2", y_scale);
+				.attr("y2", y_scale)
+				.attr("opacity", ".5");
 
 		chart.selectAll(".y-scale-label").data(y_scale.ticks(10))
 			.enter().append("text")
@@ -209,6 +214,44 @@ var stacked_chart = (function() {
 				.attr("dy", "0.3em")
 				.attr("dx", -margin.left/8)
 				.text(String);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x_label_scale)
+		    .orient('bottom')
+		    .ticks(d3.time.days, 1)
+		    .tickFormat(d3.time.format('%a %d'))
+		    .tickSize(0)
+		    .tickPadding(50);
+		
+		var xTicks = d3.svg.axis()
+		    .scale(x_label_scale)
+		    .orient('bottom')
+		    .ticks(d3.time.hours, 12)
+		    .tickFormat("|")
+		    .tickSize(0)
+		    .tickPadding(41)
+
+		chart.append('g')
+		    .attr('class', 'x-axis')
+		    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
+		    .call(xAxis);	
+
+		chart.append('g')
+		    .attr('class', 'x-ticks')
+		    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
+		    .attr('opacity', '.3')
+		    .call(xTicks);	
+
+		// chart.selectAll(".x-scale-label").data(x_label_scale.ticks(d3.time.days, 1))
+		// 	.tickFormat(d3.time.format('%a %d'))
+		// 	.enter().append("text")
+		// 		.attr("class", "x-scale-label")
+		// 		.attr("x", x_label_scale)
+		// 		.attr("y", chart_height)
+		// 		.attr("dy", margin.left/2)
+		// 		.attr("dx", (chart_width/data[0].length)*24)
+		// 		.text(String)
+
 
 		var layer_groups = chart.selectAll(".layer").data(stacked_data)
 								.enter().append('g')
