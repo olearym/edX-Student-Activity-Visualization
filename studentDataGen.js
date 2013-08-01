@@ -1,5 +1,6 @@
 var maxGrade=100
 var sortByGrade = function(list,lower, upper){
+    var filteredList=[]
     if (lower == undefined){
         lower= 0
     }
@@ -7,7 +8,7 @@ var sortByGrade = function(list,lower, upper){
         upper=maxGrade
     }
     for (var i=0;i<list.length;i++){
-        var filteredList=[]
+        
         var grade = list[i]['grade']
         if ((lower<=grade)&&(grade<=upper)){
             filteredList.push(list[i])
@@ -20,7 +21,7 @@ var weeklyCompile = function(list){
     var copyList = list
     for (var i=0;i<copyList.length;i++){
         var day = (new Date(copyList[i]['time'])).getDay()
-        var time =copyList[i]['time'].split('T')[-1]
+        var time =copyList[i]['time'].split('T')[1]
         if (day==0){
             copyList[i]['time']= '2013-09-01T'+time 
         }
@@ -47,4 +48,4 @@ var weeklyCompile = function(list){
     
 }
 
-var splitWeeks= function(){
+var splitWeeks= function(){}
