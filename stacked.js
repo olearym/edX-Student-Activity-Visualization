@@ -2,10 +2,10 @@ var data_process = (function() {
 
 	var exports = {};
 
-	var video_events = []
-	var problem_events = []
-
 	var process_event_types = function(data) {
+
+		var video_events = []
+		var problem_events = []
 
 		// sort events so they are ordered chronologically with the oldest event first
 		data.sort(function(a,b){
@@ -25,6 +25,7 @@ var data_process = (function() {
 
 			}
 		}
+		return {"video_events":video_events, "problem_events":problem_events}
 	}
 
 	var round_date = function(date) {
@@ -144,52 +145,69 @@ var data_process = (function() {
 
 	exports.process_event_types = process_event_types;
 	exports.format_events = format_events;
-	exports.video_events = video_events;
-	exports.problem_events = problem_events;
+	// exports.video_events = video_events;
+	// exports.problem_events = problem_events;
 
 	return exports
 
 })();
 
-data_process.process_event_types(generated_data)
-var data = data_process.format_events([data_process.problem_events, data_process.video_events]).stacked_data
-var first_event = data_process.format_events([data_process.problem_events, data_process.video_events]).first_event
-var last_event = data_process.format_events([data_process.problem_events, data_process.video_events]).last_event
+var format_stackable_data = function(data) {
+	
+	var video_events = data_process.process_event_types(data).video_events
+	var problem_events = data_process.process_event_types(data).problem_events
+
+	var data = data_process.format_events([problem_events, video_events]).stacked_data
+	var first_event = data_process.format_events([problem_events, video_events]).first_event
+	var last_event = data_process.format_events([problem_events, video_events]).last_event
+	return {"data": data, "first_event": first_event, "last_event": last_event}
+}
 
 var stacked_chart = (function() {
 
+
 	var exports = {};
 
-	var outer_height = 300;
-	var outer_width = 3000;
+	var setup = function(data) {
 
-	var margin = { top: 20, right: 20, bottom: 20, left: 20 }
+		var outer_height = 300;
+		var outer_width = 3000;
 
-	var chart_width = outer_width - margin.left - margin.right
-	var chart_height = outer_height - margin.top - margin.bottom
+		var margin = { top: 20, right: 20, bottom: 20, left: 20 }
 
-	var stack = d3.layout.stack();
-	var stacked_data = stack(data)
-	var y_stack_max = d3.max(stacked_data, function(layer) {
-						return d3.max(layer, function(d) { return d.y +d.y0
-						})
-					});
+		var chart_width = outer_width - margin.left - margin.right
+		var chart_height = outer_height - margin.top - margin.bottom
 
-	var y_group_max = d3.max(stacked_data, function(layer) { return d3.max(layer, function(d) { return d.y })})
+		var stack = d3.layout.stack();
+		var stacked_data = stack(data.data)
+		var y_stack_max = d3.max(stacked_data, function(layer) {
+							return d3.max(layer, function(d) { return d.y +d.y0
+							})
+						});
 
-	var x_scale = d3.scale.ordinal()
-					.domain(d3.range(data[0].length)).rangeBands([0, chart_width]);
-	var x_label_scale = d3.time.scale()
-					.domain([first_event, last_event]).range([0, chart_width]).nice(d3.time.day);
-	var y_scale = d3.scale.linear()
-					.domain([0, y_stack_max]).range([chart_height, 0]);
-	var color = d3.scale.linear()
-				    .domain([0, 2])
-				    .range(["#aad", "#556"]);
+		var y_group_max = d3.max(stacked_data, function(layer) { return d3.max(layer, function(d) { return d.y })})
 
-	var setup = function() {
+		var x_scale = d3.scale.ordinal()
+						.domain(d3.range(data.data[0].length)).rangeBands([0, chart_width]);
+		var x_label_scale = d3.time.scale()
+						.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+		var y_scale = d3.scale.linear()
+						.domain([0, y_stack_max]).range([chart_height, 0]);
+		var color = d3.scale.linear()
+					    .domain([0, 2])
+					    .range(["#aad", "#556"]);
 
-		var chart = d3.select(".chart-div")
+		var constant_labels = d3.select(".chart-div")
+						.append("svg")
+							.attr("class", "labels")
+							.attr("height", outer_height)
+							.attr("width", 50)
+						.append("g")
+							.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		$(".chart-div").append($("<div class='chart-holder'></div>"))
+
+
+		var chart = d3.select(".chart-holder")
 						.append("svg")
 							.attr("class", "chart")
 							.attr("height", outer_height)
@@ -205,14 +223,15 @@ var stacked_chart = (function() {
 				.attr("y2", y_scale)
 				.attr("opacity", ".5");
 
-		chart.selectAll(".y-scale-label").data(y_scale.ticks(10))
+		constant_labels.selectAll(".y-scale-label").data(y_scale.ticks(10))
 			.enter().append("text")
 				.attr("class", "y-scale-label")
-				.attr("x", 0)
+				.attr("x", "50%")
 				.attr("y", y_scale)
 				.attr("text-anchor", "end")
 				.attr("dy", "0.3em")
 				.attr("dx", -margin.left/8)
+				.attr("font-size", "80%")
 				.text(String);
 
 		var xAxis = d3.svg.axis()
@@ -242,16 +261,6 @@ var stacked_chart = (function() {
 		    .attr('opacity', '.3')
 		    .call(xTicks);	
 
-		// chart.selectAll(".x-scale-label").data(x_label_scale.ticks(d3.time.days, 1))
-		// 	.tickFormat(d3.time.format('%a %d'))
-		// 	.enter().append("text")
-		// 		.attr("class", "x-scale-label")
-		// 		.attr("x", x_label_scale)
-		// 		.attr("y", chart_height)
-		// 		.attr("dy", margin.left/2)
-		// 		.attr("dx", (chart_width/data[0].length)*24)
-		// 		.text(String)
-
 
 		var layer_groups = chart.selectAll(".layer").data(stacked_data)
 								.enter().append('g')
@@ -266,7 +275,18 @@ var stacked_chart = (function() {
 							.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
 	}
 
-	exports.setup = setup
+	exports.setup = setup;
+
+	var change_graphed_data = function(data) {
+		var layer_groups = d3.select('.chart').selectAll(".layer").data(data)
+		
+		layer_groups.exit().remove()
+
+		var rects = layer_groups.selectAll("rect").data(function(d) { return d; })
+
+		rects.exit().remove()
+	}
+	exports.change_graphed_data = change_graphed_data;
 
 	return exports
 
@@ -274,6 +294,6 @@ var stacked_chart = (function() {
 
 $(document).ready(function() {
 	$(".chart-div").each(function() {
-		stacked_chart.setup()
+		stacked_chart.setup(format_stackable_data(generated_data))
 	})
 })

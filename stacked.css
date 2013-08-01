@@ -17,8 +17,18 @@
 	stroke: #ccc;
 }
 
+.chart-holder {
+	width: 95%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	position: relative;
+	top: -300px;
+	right: -50px;
+}
 .chart-div {
 	width: 100%;
-	overflow: auto;
 	border: 1px solid gray;
+	height: 310px;
+	overflow: hidden;
 }
+
