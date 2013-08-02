@@ -143,6 +143,7 @@ var stacked_chart = (function() {
 	var chart_height = outer_height - margin.top - margin.bottom
 
 	var setup = function(data) {
+		$('.chart').remove()
 
 		var stack = d3.layout.stack();
 		var stacked_data = stack(data.data)
