@@ -1,10 +1,10 @@
 var maxGrade=100
 var sortByGrade = function(list,lower, upper){
     var filteredList=[]
-    if (lower == undefined){
+    if (lower == NaN){
         lower= 0
     }
-    if (upper==undefined){
+    if (upper==NaN){
         upper=maxGrade
     }
     for (var i=0;i<list.length;i++){
