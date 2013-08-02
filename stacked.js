@@ -89,6 +89,7 @@ var format_events = function(events) {
 				}
 				events_by_hour[event_day][event_hour].push(event);
 			}
+			console.log(events_by_hour)
 
 			// make num_events from events_by_hour
 			for (var i in events_by_hour) {
@@ -131,7 +132,6 @@ var format_stackable_data = function(data) {
 
 var stacked_chart = (function() {
 
-
 	var exports = {};
 
 	var outer_height = 300;
@@ -143,6 +143,10 @@ var stacked_chart = (function() {
 	var chart_height = outer_height - margin.top - margin.bottom
 
 	var setup = function(data) {
+		if (data.data[0].length < 200) {
+			outer_width = 1000;
+			chart_width = outer_width - margin.left - margin.right
+		}
 		$('.chart').remove()
 
 		console.log(data)
@@ -320,6 +324,6 @@ var stacked_chart = (function() {
 
 $(document).ready(function() {
 	$(".chart-div").each(function() {
-		stacked_chart.setup(format_stackable_data(generated_data))
+		stacked_chart.setup(format_stackable_data(generated_data_graded))
 	})
 })
