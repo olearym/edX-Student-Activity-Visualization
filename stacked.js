@@ -37,7 +37,7 @@ var data_process = (function() {
 	// takes an array of arrays containing chronologically sorted event objects
 	// returns an array containing arrays of "y" values for each hour for each
 	// array entered. Each entered array contains an array of events of different types.
-	var format_events = function(events) {
+var format_events = function(events) {
 
 		var out = {};
 		var stacked_data = [];
@@ -62,7 +62,7 @@ var data_process = (function() {
 		round_date(last_event);
 
 		var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
-		
+
 		for (var index = 0; index < events.length; index++) {
 
 			var events_by_hour = {};
@@ -72,7 +72,7 @@ var data_process = (function() {
 			// make events_by_hour
 			// looks like {"date" : {0: [...], 1: [...], ...}}
 			for (var i = 0; i < events[index].length; i++) {
-				
+
 				var event = events[index][i];
 
 				var event_date = new Date(event.time);
@@ -145,6 +145,8 @@ var stacked_chart = (function() {
 	var setup = function(data) {
 		$('.chart').remove()
 
+		console.log(data)
+
 		var stack = d3.layout.stack();
 		var stacked_data = stack(data.data)
 		var y_stack_max = d3.max(stacked_data, function(layer) {
@@ -174,6 +176,7 @@ var stacked_chart = (function() {
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 		$(".chart-div").append($("<div class='chart-holder'></div>"))
 
+		// counters svg annoyingness when making new chart
 		if ($('.labels').length > 1) {
 			$(".labels")[1].parentNode.insertBefore($(".labels")[1],$(".labels")[1].parentNode.firstChild)
 			$(".labels")[1].remove()
