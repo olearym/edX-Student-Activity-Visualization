@@ -48,4 +48,8 @@ var weeklyCompile = function(list){
     
 }
 
-var splitWeeks= function(){}
+var sortByWeek = function(list, startDate, endDate){
+    var copyList = list
+    for (var i=0;i<copyList.length;i++){
+            }
+}
