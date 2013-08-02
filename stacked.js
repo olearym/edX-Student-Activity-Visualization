@@ -68,10 +68,6 @@ var data_process = (function() {
 			var events_by_hour = {};
 			var num_events = [];
 			var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
-			
-			for (var i = 0; i < first_event.getHours(); i++) {
-				num_events.push({"y":0})
-			}
 
 			// make events_by_hour
 			// looks like {"date" : {0: [...], 1: [...], ...}}
@@ -94,43 +90,13 @@ var data_process = (function() {
 				events_by_hour[event_day][event_hour].push(event);
 			}
 
-			//make num_events
-			//fills array with "y" values, each "y" value corresponds to an hour
-			for (var i = 0; i < hour_offset; i++) {
-				num_events.push({"y": 0 });
-			}
-			for (var i = 0; i < events[index].length; i++) {
-
-				var current_event = new Date(events[index][i].time);
-				round_date(current_event);
-
-				if (i == 0) {
-					num_events.push( {"y": 1} );
-
-				} else {
-
-					var prev_event = new Date(events[index][i-1].time);
-					round_date(prev_event);
-
-					var ms_diff = Math.abs(current_event.getTime() - prev_event.getTime());
-					var diffHours = Math.floor(ms_diff / (1000 * 3600))
-
-					if (current_event.getHours() == prev_event.getHours() && diffHours == 0) {
-						num_events[num_events.length - 1]["y"] += 1;
-
-					} else {
-						if (diffHours > 1) {
-							for (var j = 1; j < diffHours; j++) {
-								num_events.push( {"y": 0} );
-							}
-						} 
-						num_events.push( {"y": 1} );
-					}
+			// make num_events from events_by_hour
+			for (var i in events_by_hour) {
+				for (var j in events_by_hour[i]) {
+					num_events.push( {"y": events_by_hour[i][j].length} )
 				}
 			}
-			for (var i = 23; i > last_event.getHours(); i--) {
-				num_events.push({"y":0})
-			}
+
 			total_events_by_hour.push(events_by_hour)
 			stacked_data.push(num_events)
 		}
@@ -168,15 +134,15 @@ var stacked_chart = (function() {
 
 	var exports = {};
 
+	var outer_height = 300;
+	var outer_width = 3000;
+
+	var margin = { top: 20, right: 20, bottom: 20, left: 20 }
+
+	var chart_width = outer_width - margin.left - margin.right
+	var chart_height = outer_height - margin.top - margin.bottom
+
 	var setup = function(data) {
-
-		var outer_height = 300;
-		var outer_width = 3000;
-
-		var margin = { top: 20, right: 20, bottom: 20, left: 20 }
-
-		var chart_width = outer_width - margin.left - margin.right
-		var chart_height = outer_height - margin.top - margin.bottom
 
 		var stack = d3.layout.stack();
 		var stacked_data = stack(data.data)
@@ -203,6 +169,7 @@ var stacked_chart = (function() {
 							.attr("height", outer_height)
 							.attr("width", 50)
 						.append("g")
+							.attr("class", "labels-holder")
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 		$(".chart-div").append($("<div class='chart-holder'></div>"))
 
@@ -214,6 +181,8 @@ var stacked_chart = (function() {
 							.attr("width", outer_width)
 						.append("g")
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+		chart.selectAll("line").remove()
 
 		chart.selectAll("line").data(y_scale.ticks(10))
 			.enter().append("line")
@@ -264,7 +233,6 @@ var stacked_chart = (function() {
 		    .attr('opacity', '.3')
 		    .call(xTicks);	
 
-
 		var layer_groups = chart.selectAll(".layer").data(stacked_data)
 								.enter().append('g')
 									.attr("class", "layer")
@@ -275,7 +243,7 @@ var stacked_chart = (function() {
 		var rects = layer_groups.selectAll("rect").data(function(d) { return d; })
 						.enter().append("rect")
 							.attr("x", function(d, i) { return x_scale(i) })
-							.attr("y", function(d) { return y_scale(d.y0 + d.y)})
+							.attr("y", function(d) {return y_scale(d.y0 + d.y)})
 							.attr("width", x_scale.rangeBand())
 							.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
 		var rect = layer_groups.selectAll("rect").data(function(d) { return d; })
@@ -283,7 +251,60 @@ var stacked_chart = (function() {
 
 	}
 
+	// called to redraw data if new data has same time period as old data
+	var redraw = function(data) {
+		var stack = d3.layout.stack();
+		var stacked_data = stack(data.data)
+
+		var y_stack_max = d3.max(stacked_data, function(layer) {
+							return d3.max(layer, function(d) { return d.y +d.y0
+							})
+						});
+		var x_scale = d3.scale.ordinal()
+						.domain(d3.range(data.data[0].length)).rangeBands([0, chart_width]);
+		var x_label_scale = d3.time.scale()
+						.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+		var y_scale = d3.scale.linear()
+						.domain([0, y_stack_max]).range([chart_height, 0]);
+		d3.select('.chart').selectAll("line").remove()
+		d3.select('.chart').selectAll("line").data(y_scale.ticks(10))
+			.enter().append("line")
+				.attr("x1", 0)
+				.attr("x2", chart_width)
+				.attr("y1", y_scale)
+				.attr("y2", y_scale)
+				.attr("opacity", ".5")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		d3.select('.labels').selectAll(".y-scale-label").remove()
+		d3.select('.labels').selectAll(".labels-holder").remove()
+
+		d3.select('.labels').selectAll(".y-scale-label").data(y_scale.ticks(10))
+			.enter().append("text")
+				.attr("class", "y-scale-label")
+				.attr("x", "50%")
+				.attr("y", y_scale)
+				.attr("text-anchor", "end")
+				.attr("dy", "0.3em")
+				.attr("dx", -margin.left/8)
+				.attr("font-size", "80%")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+				.text(String);
+
+
+		var layer_groups = d3.select('.chart').selectAll(".layer").data(stacked_data)
+		
+		layer_groups.selectAll("rect").data(function(d) { return d; })
+		 .transition()
+		 .duration(2000)
+ 		 .attr("x", function(d, i) { return x_scale(i) })
+		 .attr("y", function(d) {return y_scale(d.y0 + d.y)})
+		 .attr("width", x_scale.rangeBand())
+		 .attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
+	}
+
 	exports.setup = setup;
+	exports.redraw = redraw;
 
 	return exports
 
