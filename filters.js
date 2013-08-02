@@ -1,4 +1,5 @@
 var filtered_data = generated_data
+var currentView='all'
 var setupFilters= function(){
     var timeFilterBar = $("<div>Filter by Time<select class='time'><option value='all'>All</option><option value='compWeek'>Compiled Weekly View</option></select></div>")
     var gradeFilter = $("<div>Filter by Grade<input class='lower' placeholder='Lower limit'></input><input class='upper' placeholder='Upper limit'></input></div>")
@@ -14,15 +15,23 @@ var applyFilters=function(){
     var timeFilter = $('.time').val()
     var upper = parseInt($('.upper').val())
     var lower=parseInt($('.lower').val())
-    
-    if (timeFilter = 'compWeek'){
+    var oldView= currentView
+    if (timeFilter == 'compWeek'){
         filtered_data=weeklyCompile(filtered_data)
+        currentView='compWeek'
+    }
+    else{
+        currentView='all'
     }
     
     filtered_data=sortByGrade(filtered_data,lower,upper)
-                                    
-    stacked_chart.setup(format_stackable_data(filtered_data))
-    
+     
+    if (currentView==oldView){
+        stacked_chart.redraw(format_stackable_data(filtered_data))
+        }
+    else{
+        stacked_chart.setup(format_stackable_data(filtered_data))
+    }
     var filtered_data=generated_data
                                     
 }
