@@ -174,6 +174,10 @@ var stacked_chart = (function() {
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 		$(".chart-div").append($("<div class='chart-holder'></div>"))
 
+		if ($('.labels').length > 1) {
+			$(".labels")[1].parentNode.insertBefore($(".labels")[1],$(".labels")[1].parentNode.firstChild)
+			$(".labels")[1].remove()
+		}
 
 		var chart = d3.select(".chart-holder")
 						.append("svg")
