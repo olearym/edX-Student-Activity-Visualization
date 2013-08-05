@@ -32,6 +32,7 @@ var data_process = (function() {
 		date.setMinutes(0);
 		date.setSeconds(0);
 		date.setMilliseconds(0);
+
 	}
 
 	// takes an array of arrays containing chronologically sorted event objects
@@ -44,30 +45,46 @@ var format_events = function(events) {
 		var total_events_by_hour = [];
 
 		var first_event = new Date(events[0][0].time);
+		var first_event_list = events[0]
 		for (var index = 1; index < events.length; index++) {
 			var looped_event = new Date(events[index][0].time)
 			if (looped_event.getTime() < first_event.getTime()) {
 				first_event = looped_event;
+				first_event_type = events[index]
 			}
 		}
 		round_date(first_event);
 
 		var last_event = new Date(events[0][events[0].length - 1].time);
+		var last_event_type = events[0]
 		for (var index = 1; index < events.length; index++) {
 			var looped_event = new Date(events[index][events[index].length - 1].time)
 			if (looped_event.getTime() > last_event.getTime()) {
 				last_event = looped_event
+				last_event_type = events[index]
 			}
 		}
 		round_date(last_event);
 
 		var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
 
+
+
 		for (var index = 0; index < events.length; index++) {
 
 			var events_by_hour = {};
 			var num_events = [];
 			var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
+
+			var first_day = new Date(first_event.getTime())
+			first_day.setHours(0)
+			var last_day = new Date(last_event.getTime())
+			last_day.setHours(0)
+			var num_days = Math.ceil((last_day.getTime() - first_day.getTime())/(3600 * 1000 * 24))
+
+			for (var i = 0; i < num_days; i++) {
+
+			}
 
 			// make events_by_hour
 			// looks like {"date" : {0: [...], 1: [...], ...}}
@@ -90,6 +107,11 @@ var format_events = function(events) {
 				events_by_hour[event_day][event_hour].push(event);
 			}
 
+			// events_by_hour["8/31"] = {}
+			// for (var j = 0; j < 24; j++) {
+			// 			events_by_hour["8/31"][j] = [];
+			// 	}
+
 			// make num_events from events_by_hour
 			for (var i in events_by_hour) {
 				for (var j in events_by_hour[i]) {
@@ -100,6 +122,9 @@ var format_events = function(events) {
 			total_events_by_hour.push(events_by_hour)
 			stacked_data.push(num_events)
 		}
+		
+			
+		console.log(total_events_by_hour)
 
 		out.stacked_data = stacked_data
 		out.events_by_hour = total_events_by_hour
@@ -108,7 +133,7 @@ var format_events = function(events) {
 		return out;
 
 	}
-
+	exports.round_date = round_date
 	exports.process_event_types = process_event_types;
 	exports.format_events = format_events;
 	// exports.video_events = video_events;
@@ -118,6 +143,7 @@ var format_events = function(events) {
 
 })();
 
+var due_dates = {"PSet 1": new Date(2013, 8, 10, 21, 0, 0, 0), "PSet 2": new Date(2013, 8, 20, 21, 0, 0, 0), "Quiz 1":new Date(2013, 8, 25, 18, 0, 0, 0)}
 
 var format_stackable_data = function(data) {
 	
@@ -145,6 +171,7 @@ var stacked_chart = (function() {
 	var legend_text = {0: "Problem Events", 1: "Video Events"}
 
 	var setup = function(data) {
+		console.log(data.last_event)
 		if (data.data[0].length < 200) {
 			outer_width = 1200;
 			chart_width = outer_width - margin.left - margin.right
@@ -153,6 +180,7 @@ var stacked_chart = (function() {
 
 		var stack = d3.layout.stack();
 		var stacked_data = stack(data.data)
+		console.log(stacked_data)
 		var y_stack_max = d3.max(stacked_data, function(layer) {
 							return d3.max(layer, function(d) { return d.y +d.y0
 							})
@@ -164,6 +192,7 @@ var stacked_chart = (function() {
 						.domain(d3.range(data.data[0].length)).rangeBands([0, chart_width]);
 		var x_label_scale = d3.time.scale()
 						.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+		console.log(x_label_scale.domain())
 		var y_scale = d3.scale.linear()
 						.domain([0, y_stack_max]).range([chart_height, 0]);
 		var color = d3.scale.linear()
@@ -260,6 +289,10 @@ var stacked_chart = (function() {
 		    .tickSize(0)
 		    .tickPadding(41)
 
+		chart.append('g')
+			.attr("class", "due-dates")
+			.attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')');
+
 		chart.selectAll('.x-axis').remove();
 		chart.selectAll('.x-ticks').remove();
 
@@ -272,7 +305,28 @@ var stacked_chart = (function() {
 		    .attr('class', 'x-ticks')
 		    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
 		    .attr('opacity', '.3')
-		    .call(xTicks);	
+		    .call(xTicks);
+
+		for (date in due_dates) {
+			var first_day = new Date(data.first_event.getTime())
+			data_process.round_date(first_day)
+			first_day.setHours(0)
+			var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000));
+			console.log(diff_hours)
+			console.log(due_dates[date], first_day)
+			var dueTick = chart.append("g")
+							.attr("class", "date-tick")
+							.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+25)+')');
+			var dueMark = chart.append("g")
+							.attr("class", "date-tick")
+							.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+8)+')');
+			dueMark.append("text")
+				.attr("text-anchor", "middle")
+				.text("|");
+			dueTick.append('text')
+				.attr("text-anchor", "middle")
+				.text(date);
+		}	
 
 		var layer_groups = chart.selectAll(".layer").data(stacked_data)
 								.enter().append('g')
