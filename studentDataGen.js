@@ -26,14 +26,14 @@ var sortByType=function(list, types){
     var videoTypes=['play_video','pause_video']
     var problemTypes=['problem_check']
     for (var i=0;i<types.length;i++){
-        if (types[i]='video'){
+        if (types[i]=='video'){
             for (var j=0;j<list.length;j++){
                 if (videoTypes.indexOf(list[j]['event_type'])!=-1){
                     newList.push(list[j])
                 }
             }
         }
-        if (types[i]='problem'){
+        if (types[i]=='problem'){
             for (var k=0;k<list.length;k++){
                 if (problemTypes.indexOf(list[k]['event_type'])!=-1){
                     newList.push(list[k])

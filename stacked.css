@@ -41,23 +41,25 @@
 #grade-slider{
     width:25%;
     position:relative;
-    left:8%;
+    left:109px;
     top:5px;
     font-family:serif;
     font-size:none;
+    
 }
 
 .grade-title{
     position:relative;
-    left:-32%;
+    left:-110px;
     top:-4px;
     font-weight:normal;
     font-size:12pt;
+    color:#000000;
     
 }
 #amount{
     position:relative;
-    left:18%;
+    left:225px;
     top:5px;
     
 }
