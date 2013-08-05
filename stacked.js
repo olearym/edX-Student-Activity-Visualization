@@ -1,7 +1,10 @@
+// contains functions for formatting raw data
 var data_process = (function() {
 
 	var exports = {};
 
+	// sorts events into chronological order and separates them into different event types.
+	// returns an object with event types as keys and arrays as values.
 	var process_event_types = function(data) {
 
 		var video_events = []
@@ -14,6 +17,7 @@ var data_process = (function() {
 		  return a<b?-1:a>b?1:0;
 		});
 
+		// put individual events into correct array
 		for (var i = 0; i < data.length; i++) {
 			if (data[i].event_type == "play_video" || data[i].event_type == "pause_video") {
 
@@ -41,15 +45,19 @@ var data_process = (function() {
 	var format_events = function(events) {
 		var out = {};
 
-		if (events[0].length == 0) {
+		// if the entered arrays do not have values, return an empty object. else, create arrays
+		// to chart.
+		if (events[0].length == 0 && events[1].length == 0) {
 
 			return out;
 
 		} else {
 
+			// these two variables will be filled and returned
 			var stacked_data = [];
 			var total_events_by_hour = [];
 
+			// find the first event and the input array containing it
 			var first_event = new Date(events[0][0].time);
 			var first_event_list = events[0]
 			for (var index = 1; index < events.length; index++) {
@@ -61,6 +69,7 @@ var data_process = (function() {
 			}
 			round_date(first_event);
 
+			// find the last event and the input array containing it
 			var last_event = new Date(events[0][events[0].length - 1].time);
 			var last_event_type = events[0]
 			for (var index = 1; index < events.length; index++) {
@@ -71,9 +80,6 @@ var data_process = (function() {
 				}
 			}
 			round_date(last_event);
-
-			var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
-
 
 
 			for (var index = 0; index < events.length; index++) {
