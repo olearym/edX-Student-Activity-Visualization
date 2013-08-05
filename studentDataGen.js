@@ -1,12 +1,15 @@
 var maxGrade=100
 var sortByGrade = function(list,lower, upper){
     var filteredList=[]
-    if (lower == NaN){
+    if (lower == ""){
         lower= 0
     }
-    if (upper==NaN){
+    if (upper==""){
         upper=maxGrade
     }
+    
+    parseInt(lower)
+    parseInt(upper)
     for (var i=0;i<list.length;i++){
         
         var grade = list[i]['grade']
@@ -15,6 +18,19 @@ var sortByGrade = function(list,lower, upper){
         }
     }
     return filteredList
+}
+
+var sortByType=function(list, type){
+    var newList=[]
+    
+    var videoTypes=['play_video','pause_video']
+    var problemType=['
+    if (type=='video'){
+        for (i=0;i<list.length;i++){
+            if (list[i]['event_type']==)
+        }
+    }
+    
 }
 
 var weeklyCompile = function(list){

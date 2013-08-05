@@ -134,7 +134,7 @@ var makeFullData = function(numberStudents, avgActions){
      for (var i=0;i<timestamps.length;i++){
          var JSONEntry = {}
          JSONEntry['username']=names[Math.floor(Math.random()*names.length)]
-//         JSONEntry['grade']=gradebook[JSONEntry['username']]
+         JSONEntry['grade']=gradebook[JSONEntry['username']]
          JSONEntry['event_type']=generateEventType(JSONEntry['username'])
          JSONEntry['time']=timestamps[i].toJSON()
          finalList.push(JSONEntry)
