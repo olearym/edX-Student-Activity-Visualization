@@ -38,109 +38,116 @@ var data_process = (function() {
 	// takes an array of arrays containing chronologically sorted event objects
 	// returns an array containing arrays of "y" values for each hour for each
 	// array entered. Each entered array contains an array of events of different types.
-var format_events = function(events) {
-
+	var format_events = function(events) {
 		var out = {};
-		var stacked_data = [];
-		var total_events_by_hour = [];
 
-		var first_event = new Date(events[0][0].time);
-		var first_event_list = events[0]
-		for (var index = 1; index < events.length; index++) {
-			var looped_event = new Date(events[index][0].time)
-			if (looped_event.getTime() < first_event.getTime()) {
-				first_event = looped_event;
-				first_event_type = events[index]
-			}
-		}
-		round_date(first_event);
+		if (events[0].length == 0) {
 
-		var last_event = new Date(events[0][events[0].length - 1].time);
-		var last_event_type = events[0]
-		for (var index = 1; index < events.length; index++) {
-			var looped_event = new Date(events[index][events[index].length - 1].time)
-			if (looped_event.getTime() > last_event.getTime()) {
-				last_event = looped_event
-				last_event_type = events[index]
-			}
-		}
-		round_date(last_event);
+			return out;
 
-		var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
+		} else {
 
+			var stacked_data = [];
+			var total_events_by_hour = [];
 
-
-		for (var index = 0; index < events.length; index++) {
-
-			var events_by_hour = {};
-			var num_events = [];
-			var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
-
-			var first_day = new Date(first_event.getTime())
-			first_day.setHours(0)
-			var last_day = new Date(last_event.getTime())
-			last_day.setHours(0)
-			var num_days = Math.ceil((last_day.getTime() - first_day.getTime())/(3600 * 1000 * 24))
-
-			for (var i = 0; i < num_days; i++) {
-
-			}
-
-			// make events_by_hour
-			// looks like {"date" : {0: [...], 1: [...], ...}}
-			for (var i = 0; i < events[index].length; i++) {
-
-				var event = events[index][i];
-
-				var event_date = new Date(event.time);
-				var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
-				var event_hour = event_date.getHours();
-
-				if (events_by_hour[event_day] == undefined) {
-					events_by_hour[event_day] = {};
+			var first_event = new Date(events[0][0].time);
+			var first_event_list = events[0]
+			for (var index = 1; index < events.length; index++) {
+				var looped_event = new Date(events[index][0].time)
+				if (looped_event.getTime() < first_event.getTime()) {
+					first_event = looped_event;
+					first_event_type = events[index]
 				}
-				if (events_by_hour[event_day][event_hour] == undefined) {
+			}
+			round_date(first_event);
+
+			var last_event = new Date(events[0][events[0].length - 1].time);
+			var last_event_type = events[0]
+			for (var index = 1; index < events.length; index++) {
+				var looped_event = new Date(events[index][events[index].length - 1].time)
+				if (looped_event.getTime() > last_event.getTime()) {
+					last_event = looped_event
+					last_event_type = events[index]
+				}
+			}
+			round_date(last_event);
+
+			var total_hours = Math.floor((last_event.getTime() - first_event.getTime())/(1000*3600))
+
+
+
+			for (var index = 0; index < events.length; index++) {
+
+				var events_by_hour = {};
+				var num_events = [];
+				var hour_offset = Math.floor((new Date(events[index][0].time).getTime() - first_event.getTime())/(1000*3600));
+
+				var first_day = new Date(first_event.getTime())
+				first_day.setHours(0)
+				var last_day = new Date(last_event.getTime())
+				last_day.setHours(0)
+				var num_days = Math.ceil((last_day.getTime() - first_day.getTime())/(3600 * 1000 * 24))
+
+				for (var i = 0; i <= num_days; i++) {
+					var ms_day = 3600*1000*24
+					
+					var event_date = new Date(first_event.getTime() + i*ms_day);
+					var event_day = (event_date.getMonth() + 1) +"/"+(event_date.getDate());
+					events_by_hour[event_day] = {}
+
 					for (var j = 0; j < 24; j++) {
-						events_by_hour[event_day][j] = [];
+				 		events_by_hour[event_day][j] = [];
+				 	}
+				}
+
+				// make events_by_hour
+				// looks like {"date" : {0: [...], 1: [...], ...}}
+				for (var i = 0; i < events[index].length; i++) {
+
+					var event = events[index][i];
+
+					var event_date = new Date(event.time);
+					var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
+					var event_hour = event_date.getHours();
+
+					// if (events_by_hour[event_day] == undefined) {
+					// 	events_by_hour[event_day] = {};
+					// }
+					// if (events_by_hour[event_day][event_hour] == undefined) {
+					// 	for (var j = 0; j < 24; j++) {
+					// 		events_by_hour[event_day][j] = [];
+					// 	}
+					// }
+					events_by_hour[event_day][event_hour].push(event);
+				}
+
+				// make num_events from events_by_hour
+				for (var i in events_by_hour) {
+					for (var j in events_by_hour[i]) {
+						num_events.push( {"y": events_by_hour[i][j].length} )
 					}
 				}
-				events_by_hour[event_day][event_hour].push(event);
+
+				total_events_by_hour.push(events_by_hour)
+				stacked_data.push(num_events)
 			}
 
-			// events_by_hour["8/31"] = {}
-			// for (var j = 0; j < 24; j++) {
-			// 			events_by_hour["8/31"][j] = [];
-			// 	}
+			out.stacked_data = stacked_data
+			out.events_by_hour = total_events_by_hour
+			out.first_event = first_event
+			out.last_event = last_event
+			return out;
 
-			// make num_events from events_by_hour
-			for (var i in events_by_hour) {
-				for (var j in events_by_hour[i]) {
-					num_events.push( {"y": events_by_hour[i][j].length} )
-				}
-			}
-
-			total_events_by_hour.push(events_by_hour)
-			stacked_data.push(num_events)
 		}
-		
-			
-		console.log(total_events_by_hour)
-
-		out.stacked_data = stacked_data
-		out.events_by_hour = total_events_by_hour
-		out.first_event = first_event
-		out.last_event = last_event
-		return out;
-
 	}
-	exports.round_date = round_date
-	exports.process_event_types = process_event_types;
-	exports.format_events = format_events;
-	// exports.video_events = video_events;
-	// exports.problem_events = problem_events;
+		exports.round_date = round_date
+		exports.process_event_types = process_event_types;
+		exports.format_events = format_events;
+		// exports.video_events = video_events;
+		// exports.problem_events = problem_events;
 
-	return exports
-
+		return exports
+	
 })();
 
 var due_dates = {"PSet 1": new Date(2013, 8, 10, 21, 0, 0, 0), "PSet 2": new Date(2013, 8, 20, 21, 0, 0, 0), "Quiz 1":new Date(2013, 8, 25, 18, 0, 0, 0)}
@@ -171,16 +178,18 @@ var stacked_chart = (function() {
 	var legend_text = {0: "Problem Events", 1: "Video Events"}
 
 	var setup = function(data) {
-		console.log(data.last_event)
+
 		if (data.data[0].length < 200) {
 			outer_width = 1200;
 			chart_width = outer_width - margin.left - margin.right
 		}
 		$('.chart').remove()
+		$('.due-dates').remove()
+		$('.legend').remove()
 
 		var stack = d3.layout.stack();
 		var stacked_data = stack(data.data)
-		console.log(stacked_data)
+
 		var y_stack_max = d3.max(stacked_data, function(layer) {
 							return d3.max(layer, function(d) { return d.y +d.y0
 							})
@@ -192,7 +201,6 @@ var stacked_chart = (function() {
 						.domain(d3.range(data.data[0].length)).rangeBands([0, chart_width]);
 		var x_label_scale = d3.time.scale()
 						.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-		console.log(x_label_scale.domain())
 		var y_scale = d3.scale.linear()
 						.domain([0, y_stack_max]).range([chart_height, 0]);
 		var color = d3.scale.linear()
@@ -312,8 +320,7 @@ var stacked_chart = (function() {
 			data_process.round_date(first_day)
 			first_day.setHours(0)
 			var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000));
-			console.log(diff_hours)
-			console.log(due_dates[date], first_day)
+
 			var dueTick = chart.append("g")
 							.attr("class", "date-tick")
 							.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+25)+')');
@@ -349,53 +356,64 @@ var stacked_chart = (function() {
 	// called to redraw data if new data has same time period as old data
 	var redraw = function(data) {
 		var stack = d3.layout.stack();
-		var stacked_data = stack(data.data)
+		if (data.data == undefined) {
+			
+			var layer_groups = d3.select('.chart').selectAll(".layer")
+			
+			layer_groups.selectAll("rect")
+				.transition(2000)
+				.attr("height", 0)
 
-		var y_stack_max = d3.max(stacked_data, function(layer) {
-							return d3.max(layer, function(d) { return d.y +d.y0
-							})
-						});
-		var x_scale = d3.scale.ordinal()
-						.domain(d3.range(data.data[0].length)).rangeBands([0, chart_width]);
-		var x_label_scale = d3.time.scale()
-						.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-		var y_scale = d3.scale.linear()
-						.domain([0, y_stack_max]).range([chart_height, 0]);
-		d3.select('.chart').selectAll("line").remove()
-		d3.select('.chart').selectAll("line").data(y_scale.ticks(10))
-			.enter().append("line")
-				.attr("x1", 0)
-				.attr("x2", chart_width)
-				.attr("y1", y_scale)
-				.attr("y2", y_scale)
-				.attr("opacity", ".5")
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		} else {
 
-		d3.select('.labels').selectAll(".y-scale-label").remove()
-		d3.select('.labels').selectAll(".labels-holder").remove()
+			var stacked_data = stack(data.data)
 
-		d3.select('.labels').selectAll(".y-scale-label").data(y_scale.ticks(10))
-			.enter().append("text")
-				.attr("class", "y-scale-label")
-				.attr("x", "50%")
-				.attr("y", y_scale)
-				.attr("text-anchor", "end")
-				.attr("dy", "0.3em")
-				.attr("dx", -margin.left/8)
-				.attr("font-size", "80%")
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-				.text(String);
+			var y_stack_max = d3.max(stacked_data, function(layer) {
+								return d3.max(layer, function(d) { return d.y +d.y0
+								})
+							});
+			var x_scale = d3.scale.ordinal()
+							.domain(d3.range(data.data[0].length)).rangeBands([0, chart_width]);
+			var x_label_scale = d3.time.scale()
+							.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+			var y_scale = d3.scale.linear()
+							.domain([0, y_stack_max]).range([chart_height, 0]);
+			d3.select('.chart').selectAll("line").remove()
+			d3.select('.chart').selectAll("line").data(y_scale.ticks(10))
+				.enter().append("line")
+					.attr("x1", 0)
+					.attr("x2", chart_width)
+					.attr("y1", y_scale)
+					.attr("y2", y_scale)
+					.attr("opacity", ".5")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			d3.select('.labels').selectAll(".y-scale-label").remove()
+			d3.select('.labels').selectAll(".labels-holder").remove()
+
+			d3.select('.labels').selectAll(".y-scale-label").data(y_scale.ticks(10))
+				.enter().append("text")
+					.attr("class", "y-scale-label")
+					.attr("x", "50%")
+					.attr("y", y_scale)
+					.attr("text-anchor", "end")
+					.attr("dy", "0.3em")
+					.attr("dx", -margin.left/8)
+					.attr("font-size", "80%")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+					.text(String);
 
 
-		var layer_groups = d3.select('.chart').selectAll(".layer").data(stacked_data)
-		
-		layer_groups.selectAll("rect").data(function(d) { return d; })
-		 .transition()
-		 .duration(2000)
- 		 .attr("x", function(d, i) { return x_scale(i) })
-		 .attr("y", function(d) {return y_scale(d.y0 + d.y)})
-		 .attr("width", x_scale.rangeBand())
-		 .attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
+			var layer_groups = d3.select('.chart').selectAll(".layer").data(stacked_data)
+			
+			layer_groups.selectAll("rect").data(function(d) { return d; })
+			 .transition()
+			 .duration(2000)
+	 		 .attr("x", function(d, i) { return x_scale(i) })
+			 .attr("y", function(d) {return y_scale(d.y0 + d.y)})
+			 .attr("width", x_scale.rangeBand())
+			 .attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
+		}
 	}
 
 	exports.setup = setup;
