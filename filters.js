@@ -3,11 +3,11 @@ var currentView='all'
 var setupFilters= function(){
     var timeFilterBar = $("<div id='time'>Filter by Time<select class='time'><option value='all'>All</option><option value='compWeek'>Compiled Weekly View</option></select></div>")
     var gradeFilter = $("<div id='grade-slider'><span class='grade-title'>Filter by Grade</span></div><div><input type='text' id='amount' style='border: 0; color: #000000;'></input></div>")
-    var typeFilters = $('<div id="typeFilters"><form name="types" class="types"><input type="checkbox" class="video"  name ="video" checked=true value="video">Show Video Events<br><input type="checkbox" name="problem" class="problem" checked=true value="problem">Show Problem Events</form></div>')
+//    var typeFilters = $('<div id="typeFilters"><form name="types" class="types"><input type="checkbox" class="video"  name ="video" checked=true value="video">Show Video Events<br><input type="checkbox" name="problem" class="problem" checked=true value="problem">Show Problem Events</form></div>')
     var goButton = $("<button class='go btn' onclick='applyFilters()'>View Filtered Data</button>")
     $('.filter-div').append(timeFilterBar)
                     .append(gradeFilter)
-                    .append(typeFilters)
+//                    .append(typeFilters)
                     .append(goButton)
     $(function() {
     $( "#grade-slider" ).slider({
@@ -27,20 +27,20 @@ var setupFilters= function(){
 }
 
 var applyFilters=function(){
-    filtered_data=generated_data_graded
+    var filtered_data=$.extend(true, [], generated_data_graded)
     var timeFilter = $('.time').val()
     var upper = $( "#grade-slider" ).slider( "values", 1 )
     var lower = $( "#grade-slider" ).slider( "values", 0 )
     var oldView= currentView
-    var typesList = []
-    if (types.video.checked==true){
-        typesList.push('video')
-    }
-    if (types.problem.checked==true){
-        typesList.push('problem')
-    }
-    
-    filtered_data=sortByType(filtered_data,typesList)
+//    var typesList = []
+//    if (types.video.checked==true){
+//        typesList.push('video')
+//    }
+//    if (types.problem.checked==true){
+//        typesList.push('problem')
+//    }
+//    
+//    filtered_data=sortByType(filtered_data,typesList)
     
     if (timeFilter == 'compWeek'){
         filtered_data=weeklyCompile(filtered_data)
@@ -58,7 +58,6 @@ var applyFilters=function(){
     else{
         stacked_chart.setup(format_stackable_data(filtered_data))
     }
-    var filtered_data=generated_data_graded
                                     
 }
 

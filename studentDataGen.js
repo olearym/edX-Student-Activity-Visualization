@@ -46,7 +46,7 @@ var sortByType=function(list, types){
 }
 
 var weeklyCompile = function(list){
-    var copyList = list
+    var copyList = $.extend(true, [], list)
     for (var i=0;i<copyList.length;i++){
         var day = (new Date(copyList[i]['time'])).getDay()
         var time =copyList[i]['time'].split('T')[1]
