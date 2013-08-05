@@ -20,16 +20,28 @@ var sortByGrade = function(list,lower, upper){
     return filteredList
 }
 
-var sortByType=function(list, type){
+var sortByType=function(list, types){
     var newList=[]
     
     var videoTypes=['play_video','pause_video']
-    var problemType=['
-    if (type=='video'){
-        for (i=0;i<list.length;i++){
-            if (list[i]['event_type']==)
+    var problemTypes=['problem_check']
+    for (var i=0;i<types.length;i++){
+        if (types[i]='video'){
+            for (var j=0;j<list.length;j++){
+                if (videoTypes.indexOf(list[j]['event_type'])!=-1){
+                    newList.push(list[j])
+                }
+            }
+        }
+        if (types[i]='problem'){
+            for (var k=0;k<list.length;k++){
+                if (problemTypes.indexOf(list[k]['event_type'])!=-1){
+                    newList.push(list[k])
+                }
+            }
         }
     }
+    return newList
     
 }
 
