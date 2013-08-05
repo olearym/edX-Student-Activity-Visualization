@@ -89,7 +89,6 @@ var format_events = function(events) {
 				}
 				events_by_hour[event_day][event_hour].push(event);
 			}
-			console.log(events_by_hour)
 
 			// make num_events from events_by_hour
 			for (var i in events_by_hour) {
@@ -119,6 +118,7 @@ var format_events = function(events) {
 
 })();
 
+
 var format_stackable_data = function(data) {
 	
 	var video_events = data_process.process_event_types(data).video_events
@@ -142,14 +142,14 @@ var stacked_chart = (function() {
 	var chart_width = outer_width - margin.left - margin.right
 	var chart_height = outer_height - margin.top - margin.bottom
 
+	var legend_text = {0: "Problem Events", 1: "Video Events"}
+
 	var setup = function(data) {
 		if (data.data[0].length < 200) {
-			outer_width = 1000;
+			outer_width = 1200;
 			chart_width = outer_width - margin.left - margin.right
 		}
 		$('.chart').remove()
-
-		console.log(data)
 
 		var stack = d3.layout.stack();
 		var stacked_data = stack(data.data)
@@ -174,11 +174,40 @@ var stacked_chart = (function() {
 						.append("svg")
 							.attr("class", "labels")
 							.attr("height", outer_height)
-							.attr("width", 50)
+							.attr("width", "10%")
 						.append("g")
 							.attr("class", "labels-holder")
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 		$(".chart-div").append($("<div class='chart-holder'></div>"))
+
+		var legend = d3.select(".chart-div")
+						.append("svg")
+							.attr("class", "legend")
+							.attr("height", outer_height)
+							.attr("width", "10%")
+							.attr("position", "relative")
+							.attr("float", "right")
+						.append("g")
+							.attr("y", 25)
+							.attr("class", "legend-holder")
+		legend.selectAll("rect")
+			.data(data.data)
+			.enter()
+		.append("rect")
+			.attr("x", 0)
+			.attr("y", function(d, i) { return i * 20 + 20; })
+			.attr("width", 10)
+			.attr("height", 10)
+			.style("fill", function(d, i) { return color(i); })
+		legend.selectAll("text")
+			.data(data.data)
+			.enter()
+		.append("text")
+			.attr("x", 12)
+			.attr("y", function(d, i) { return i * 20 + 30; })
+			.attr("font-size", "9px")
+			.text(function(d, i) {return legend_text[i];})
+
 
 		// counters svg annoyingness when making new chart
 		if ($('.labels').length > 1) {
@@ -207,12 +236,12 @@ var stacked_chart = (function() {
 		constant_labels.selectAll(".y-scale-label").data(y_scale.ticks(10))
 			.enter().append("text")
 				.attr("class", "y-scale-label")
-				.attr("x", "50%")
+				.attr("x", "60%")
 				.attr("y", y_scale)
 				.attr("text-anchor", "end")
 				.attr("dy", "0.3em")
 				.attr("dx", -margin.left/8)
-				.attr("font-size", "80%")
+				.attr("font-size", "9px")
 				.text(String);
 
 		var xAxis = d3.svg.axis()
