@@ -39,21 +39,6 @@ var data_process = (function() {
 		return {"video_events":video_events, "problem_events":problem_events}
 	}
 
-	var process_videos = function(video_data) {
-		var out = {}
-		var sorted_videos = {}
-
-		for (var URL in fake_videos) {
-			sorted_videos[URL] = []
-		}
-
-		for (var i = 0; i < video_data.length; i++) {
-			URL = video_data[i].URL
-			sorted_videos[URL].push(video_data[i])
-		}
-		console.log(sorted_videos)
-	}
-
 	var round_date = function(date) {
 		date.setMinutes(0);
 		date.setSeconds(0);
@@ -69,7 +54,8 @@ var data_process = (function() {
 
 		// if the entered arrays do not have values, return an empty object. else, create arrays
 		// to chart.
-		if (events[0].length == 0 || events[1].length == 0) {
+		// if (events[0].length == 0 || events[1].length == 0) {
+		if (2 == 1) {
 
 			return out;
 
@@ -80,25 +66,32 @@ var data_process = (function() {
 			var total_events_by_hour = [];
 
 			// find the first event and the input array containing it
+			console.log(events[0])
 			var first_event = new Date(events[0][0].time);
 			var first_event_list = events[0];
 			for (var index = 1; index < events.length; index++) {
-				var looped_event = new Date(events[index][0].time);
-				if (looped_event.getTime() < first_event.getTime()) {
-					first_event = looped_event;
-					first_event_type = events[index];
+				if (events[index][0] !== undefined) {
+					console.log(events[index][0])
+					var looped_event = new Date(events[index][0].time);
+					if (looped_event.getTime() < first_event.getTime()) {
+						first_event = looped_event;
+						first_event_type = events[index];
+					}
 				}
 			}
+			console.log("found first event")
 			round_date(first_event);
 
 			// find the last event and the input array containing it
 			var last_event = new Date(events[0][events[0].length - 1].time);
 			var last_event_type = events[0];
 			for (var index = 1; index < events.length; index++) {
-				var looped_event = new Date(events[index][events[index].length - 1].time);
-				if (looped_event.getTime() > last_event.getTime()) {
-					last_event = looped_event;
-					last_event_type = events[index];
+				if (events[index][0] !== undefined) {
+					var looped_event = new Date(events[index][events[index].length - 1].time);
+					if (looped_event.getTime() > last_event.getTime()) {
+						last_event = looped_event;
+						last_event_type = events[index];
+					}
 				}
 			}
 			round_date(last_event);
@@ -155,10 +148,35 @@ var data_process = (function() {
 			out.events_by_hour = total_events_by_hour;
 			out.first_event = first_event;
 			out.last_event = last_event;
+			out.data = stacked_data
 			return out;
 
 		}
 	}
+
+	var process_videos = function(video_data) {
+		var out = {}
+		var sorted_videos = {}
+		var video_array = []
+
+		for (var URL in fake_videos) {
+			sorted_videos[URL] = []
+		}
+
+		for (var i = 0; i < video_data.length; i++) {
+			URL = video_data[i].URL
+			sorted_videos[URL].push(video_data[i])
+		}
+
+		for (var URL in fake_videos) {
+			video_array.push(sorted_videos[URL])
+		}
+		return video_array
+		
+
+	}
+
+		exports.process_videos = process_videos
 		exports.round_date = round_date;
 		exports.process_event_types = process_event_types;
 		exports.format_events = format_events;
