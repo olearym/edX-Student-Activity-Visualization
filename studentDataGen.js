@@ -76,8 +76,20 @@ var weeklyCompile = function(list){
     
 }
 
-var sortByWeek = function(list, startDate, endDate){
-    var copyList = list
-    for (var i=0;i<copyList.length;i++){
-            }
+var obj_date_sort=function (obj1, obj2){
+    var date1= new Date(obj1['time'])
+    var date2= new Date(obj2['time'])
+    if (date1 > date2) return 1;
+    if (date1 < date2) return -1;
+    return 0;
 }
+
+//var sortByWeeks = function(list){
+//    var copyList = $.extend(true, [], list)//Creates a deep copy
+//    copyList.sort(obj_date_sort)
+//    for (var i=0;i<copyList.length;i++){
+//        copyList[i]['time']=new Date( copyList[i]['time'])
+//        copyList[i]['day']= copyList[i]['time'].d
+//    }
+//    
+//}
