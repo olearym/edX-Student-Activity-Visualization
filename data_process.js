@@ -1,3 +1,5 @@
+var fake_videos = {"someURL": "Video 1"} //etc
+
 // contains functions for formatting raw data
 var data_process = (function() {
 
@@ -30,6 +32,20 @@ var data_process = (function() {
 			}
 		}
 		return {"video_events":video_events, "problem_events":problem_events}
+	}
+
+	var process_videos = function(video_data) {
+		var out = {}
+		var sorted_videos = {}
+
+		for (var URL in fake_videos) {
+			sorted_videos[URL] = []
+		}
+
+		for (var i = 0; i < video_data.length; i++) {
+			URL = video_data[i].URL
+			sorted_videos[URL].push(video_data[i])
+		}
 	}
 
 	var round_date = function(date) {
