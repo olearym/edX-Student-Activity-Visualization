@@ -131,14 +131,20 @@ var makeFullData = function(numberStudents, avgActions){
                     if (finalList[i][j]==undefined){
                         finalList[i][j-1]['event_type']='seq_goto'
                     }
-                    finalList[i][j]['event_type']='pause_video'
-                    finalList[i][j]['URL']=URL
+                    else{
+                        finalList[i][j]['event_type']='pause_video'
+                        finalList[i][j]['URL']=URL
+                    }
                 }
             }
     }
+    var returnList=[]
+    for (var i=0;i<finalList.length;i++){
+        for (var j=0;j<finalList[i].length;j++){
+            returnList.push(finalList[i][j])
+        }
+    }
     
-    finalList.concat.apply(finalList, finalList)
-    
-    $('.textholder').text(JSON.stringify(finalList))
-    return JSON.stringify(finalList)
+    $('.textholder').text(JSON.stringify(returnList))
+    return JSON.stringify(returnList)
 }
