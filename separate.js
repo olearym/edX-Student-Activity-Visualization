@@ -62,6 +62,9 @@ var separate_charts = (function() {
 							.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
 			var y_scale = d3.scale.linear()
 							.domain([0, y_max]).range([chart_height, 0]);
+			var color = d3.scale.linear()
+					    .domain([0, 2])
+					    .range(["#aad", "#556"]);
 
 			var constant_labels = d3.select(".chart-div")
 						.append("svg")
@@ -168,7 +171,8 @@ var separate_charts = (function() {
 			var layer_group = chart.selectAll(".layer").data([separate_data])
 								.enter().append('g')
 									.attr("class", "layer")
-									.style("fill", "blue");
+									.style("fill", color(i));
+			console.log(color(i))
 			var rects = layer_group.selectAll("rect").data(function(d) {return d;})
 							.enter().append("rect")
 								.attr("x", function(d, i) { return x_scale(i) })
@@ -193,8 +197,13 @@ var separate_charts = (function() {
 			var y_scale = d3.scale.linear()
 							.domain([0, y_max]).range([chart_height, 0]);
 
+			var chart_holder = d3.select("."+data_types[i]+"_chart")
+
+			var chart = chart_holder.select(".chart")
+		
 			d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
-			d3.select("."+data_types[i]+"_chart").selectAll("line").data(y_scale.ticks(10))
+
+			chart.selectAll("line").data(y_scale.ticks(10))
 				.enter().append("line")
 					.attr("x1", 0)
 					.attr("x2", chart_width)
@@ -202,7 +211,32 @@ var separate_charts = (function() {
 					.attr("y2", y_scale)
 					.attr("opacity", ".5")
 					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			console.log(d3.select("."+data_types[i]+"_chart").selectAll("line"))
 
+			d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").remove()
+			d3.select("."+data_types[i]+"_labels").selectAll("labels-holder").remove()
+
+			d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").data(y_scale.ticks(10))
+				.enter().append("text")
+					.attr("class", "y-scale-label")
+					.attr("x", "50%")
+					.attr("y", y_scale)
+					.attr("text-anchor", "end")
+					.attr("dy", "0.3em")
+					.attr("dx", -margin.left/8)
+					.attr("font-size", "9px")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+					.text(String);
+
+			var layer_group = chart.selectAll(".layer").data([separate_data])
+			
+			layer_group.selectAll("rect").data(function(d) { return d; })
+			 .transition()
+			 .duration(2000)
+	 		 .attr("x", function(d, i) { return x_scale(i) })
+			 .attr("y", function(d) {return y_scale(d.y)})
+			 .attr("width", x_scale.rangeBand())
+			 .attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
 
 		}
 
