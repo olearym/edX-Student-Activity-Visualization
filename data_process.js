@@ -1,4 +1,9 @@
-var fake_videos = {"someURL": "Video 1"} //etc
+var fake_videos = {"https://courses.edx.org/courses/MITx/6.002x/2013_Spring/courseware/Week_3/Circuits_with_Nonlinear_Elements/": "Video 1",
+					"https://courses.edx.org/courses/MITx/6.002x/2013_Spring/courseware/Week_1/Administrivia_and_Circuit_Elements/": "Video 2",
+					"https://courses.edx.org/courses/MITx/6.002x/2013_Spring/courseware/Week_4/Week_4_Tutorials/": "Video 3",
+					"https://courses.edx.org/courses/MITx/6.002x/2013_Spring/courseware/Week_7/Speed_of_Digital_Circuits/": "Video 4",
+					"https://courses.edx.org/courses/MITx/6.002x/2013_Spring/courseware/Week_9/Undamped_Second-Order_Systems/": "Video 5"
+}
 
 // contains functions for formatting raw data
 var data_process = (function() {
@@ -46,6 +51,7 @@ var data_process = (function() {
 			URL = video_data[i].URL
 			sorted_videos[URL].push(video_data[i])
 		}
+		console.log(sorted_videos)
 	}
 
 	var round_date = function(date) {
