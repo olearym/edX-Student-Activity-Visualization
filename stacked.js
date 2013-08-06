@@ -262,7 +262,7 @@ var stacked_chart = (function() {
 					.attr("text-anchor", "end")
 					.attr("dy", "0.3em")
 					.attr("dx", -margin.left/8)
-					.attr("font-size", "80%")
+					.attr("font-size", "9px")
 					.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 					.text(String);
 
