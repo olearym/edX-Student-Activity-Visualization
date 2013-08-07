@@ -151,6 +151,8 @@ var data_process = (function() {
 		}
 	}
 
+	// returns array of arrays, with each inside array corresponding to each video
+	// this can be processed correctly by format_events
 	var process_videos = function(video_data) {
 		var out = {}
 		var sorted_videos = {}
@@ -173,7 +175,19 @@ var data_process = (function() {
 
 	}
 
-		exports.process_videos = process_videos
+	var video_minutes = function(problem_events, video_events) {
+
+		var first_event = video_events[0]
+		var first_video_event = video_events[0]
+		if (new Date(problem_events[0].time).getTime() < new Date(first_event.time).getTime()) {
+			first_event = problem_events[0]
+		}
+		console.log(first_event, first_video_event)
+
+	}
+
+		exports.video_minutes = video_minutes;
+		exports.process_videos = process_videos;
 		exports.round_date = round_date;
 		exports.process_event_types = process_event_types;
 		exports.format_events = format_events;
@@ -181,3 +195,14 @@ var data_process = (function() {
 		return exports;
 	
 })();
+
+var test = function(data) {
+	var video_events = data_process.process_event_types(data).video_events;
+	var problem_events = data_process.process_event_types(data).problem_events;
+
+	data_process.video_minutes(problem_events, video_events);
+}
+
+test(events_with_URL)
+
+
