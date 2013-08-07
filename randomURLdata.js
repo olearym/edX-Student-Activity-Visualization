@@ -1,1 +1,1 @@
-var events_with_URL = makeFullData(200,200)
+var events_with_URL = JSON.parse(makeFullData(200,200))

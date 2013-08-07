@@ -66,12 +66,10 @@ var data_process = (function() {
 			var total_events_by_hour = [];
 
 			// find the first event and the input array containing it
-			console.log(events[0])
 			var first_event = new Date(events[0][0].time);
 			var first_event_list = events[0];
 			for (var index = 1; index < events.length; index++) {
 				if (events[index][0] !== undefined) {
-					console.log(events[index][0])
 					var looped_event = new Date(events[index][0].time);
 					if (looped_event.getTime() < first_event.getTime()) {
 						first_event = looped_event;
@@ -79,7 +77,6 @@ var data_process = (function() {
 					}
 				}
 			}
-			console.log("found first event")
 			round_date(first_event);
 
 			// find the last event and the input array containing it
