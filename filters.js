@@ -1,4 +1,4 @@
-var filtered_data = generated_data_graded
+var filtered_data = events_with_URL
 var currentView='all'
 var setupFilters= function(){
     var timeFilterBar = $("<div id='time'>Filter by Time<select class='time'><option value='all'>All</option><option value='compWeek'>Compiled Weekly View</option></select></div>")
@@ -27,7 +27,7 @@ var setupFilters= function(){
 }
 
 var applyFilters=function(){
-    var filtered_data=$.extend(true, [], generated_data_graded)
+    var filtered_data=$.extend(true, [], events_with_URL)
     var timeFilter = $('.time').val()
     var upper = $( "#grade-slider" ).slider( "values", 1 )
     var lower = $( "#grade-slider" ).slider( "values", 0 )
@@ -53,10 +53,10 @@ var applyFilters=function(){
     filtered_data=sortByGrade(filtered_data,lower,upper)
      
     if (currentView==oldView){
-        stacked_chart.redraw(format_stackable_data(filtered_data))
+        separate_charts.redraw(format_separated_data(filtered_data))
         }
     else{
-        stacked_chart.setup(format_stackable_data(filtered_data))
+        separate_charts.setup(format_separated_data(filtered_data))
     }
                                     
 }
