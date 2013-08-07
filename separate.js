@@ -36,18 +36,18 @@ var separate_charts = (function() {
 	var data_types = ["problem_data", "video_data"]
 
 	var setup = function(data) {
-		
-		if (data.video_data.length < 200) {
+
+		if (data.problem_data.length < 200) {
 			outer_width = 1200;
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
-		if(data.video_data.length > 200) {
+		if(data.problem_data.length > 200) {
 			outer_width = 3000;
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
-		$('.chart').remove();
+		$('.chart-div').children().remove();
 		$('.due-dates').remove();
 
 		for (var i = 0; i < data_types.length; i++) {
@@ -224,59 +224,105 @@ var separate_charts = (function() {
 	var redraw = function(data) {
 
 		for (var i = 0; i < data_types.length; i++) {
+			if (data.first_event == undefined) {
 
-			var separate_data = data[data_types[i]]
-
-			var y_max = d3.max(separate_data, function(d) {return d.y;})
-
-			var x_scale = d3.scale.ordinal()
-							.domain(d3.range(separate_data.length)).rangeBands([0, chart_width]);
-			var x_label_scale = d3.time.scale()
-							.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-			var y_scale = d3.scale.linear()
-							.domain([0, y_max]).range([chart_height, 0]);
-
-			var chart_holder = d3.select("."+data_types[i]+"_chart")
-
-			var chart = chart_holder.select(".chart")
-		
-			d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
-
-			chart.selectAll("line").data(y_scale.ticks(10))
-				.enter().append("line")
-					.attr("x1", 0)
-					.attr("x2", chart_width)
-					.attr("y1", y_scale)
-					.attr("y2", y_scale)
-					.attr("opacity", ".5")
-					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-			console.log(d3.select("."+data_types[i]+"_chart").selectAll("line"))
-
-			d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").remove()
-			d3.select("."+data_types[i]+"_labels").selectAll("labels-holder").remove()
-
-			d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").data(y_scale.ticks(10))
-				.enter().append("text")
-					.attr("class", "y-scale-label")
-					.attr("x", "50%")
-					.attr("y", y_scale)
-					.attr("text-anchor", "end")
-					.attr("dy", "0.3em")
-					.attr("dx", -margin.left/8)
-					.attr("font-size", "9px")
-					.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-					.text(String);
-
-			var layer_group = chart.selectAll(".layer").data([separate_data])
+				var layer_groups = d3.select("."+data_types[i]+"_chart").select('.chart').selectAll(".layer")
 			
-			layer_group.selectAll("rect").data(function(d) { return d; })
-			 .transition()
-			 .duration(2000)
-	 		 .attr("x", function(d, i) { return x_scale(i) })
-			 .attr("y", function(d) {return y_scale(d.y)})
-			 .attr("width", x_scale.rangeBand())
-			 .attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
+				layer_groups.selectAll("rect")
+					.transition()
+					.duration(2000)
+					.attr("height", 0)
+					.attr("y", chart_height)
 
+			} else {
+
+				if (data_types[i] == "problem_data") {
+				
+					var separate_data = data[data_types[i]]
+
+					var y_max = d3.max(separate_data, function(d) {return d.y;})
+
+					var x_scale = d3.scale.ordinal()
+									.domain(d3.range(separate_data.length)).rangeBands([0, chart_width]);
+					var x_label_scale = d3.time.scale()
+									.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+					var y_scale = d3.scale.linear()
+									.domain([0, y_max]).range([chart_height, 0]);
+				}
+				else if (data_types[i] == "video_data") {
+					var stack = d3.layout.stack();
+					var separate_data = stack(data[data_types[i]].stacked_data)
+
+					var y_stack_max = d3.max(separate_data, function(layer) {
+								return d3.max(layer, function(d) { return d.y +d.y0; })
+							});
+
+					var y_group_max = d3.max(separate_data, function(layer) { return d3.max(layer, function(d) { return d.y })})
+
+					var x_scale = d3.scale.ordinal()
+									.domain(d3.range(separate_data[0].length)).rangeBands([0, chart_width]);
+					var x_label_scale = d3.time.scale()
+									.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+					var y_scale = d3.scale.linear()
+									.domain([0, y_stack_max]).range([chart_height, 0]);
+
+					
+				}
+
+				var chart_holder = d3.select("."+data_types[i]+"_chart")
+
+				var chart = chart_holder.select(".chart")
+			
+				d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
+
+				chart.selectAll("line").data(y_scale.ticks(10))
+					.enter().append("line")
+						.attr("x1", 0)
+						.attr("x2", chart_width)
+						.attr("y1", y_scale)
+						.attr("y2", y_scale)
+						.attr("opacity", ".5")
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").remove()
+				d3.select("."+data_types[i]+"_labels").selectAll("labels-holder").remove()
+
+				d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").data(y_scale.ticks(10))
+					.enter().append("text")
+						.attr("class", "y-scale-label")
+						.attr("x", "50%")
+						.attr("y", y_scale)
+						.attr("text-anchor", "end")
+						.attr("dy", "0.3em")
+						.attr("dx", -margin.left/8)
+						.attr("font-size", "9px")
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+						.text(String);
+
+				if (data_types[i] == "problem_data") {
+					var layer_group = chart.selectAll(".layer").data([separate_data])
+
+					var rects = layer_group.selectAll("rect").data(function(d) {return d;})
+								.transition()
+								.duration(2000)
+							 		.attr("x", function(d, i) { return x_scale(i) })
+									.attr("y", function(d) {return y_scale(d.y)})
+									.attr("width", x_scale.rangeBand())
+									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
+				}
+				else if (data_types[i] == "video_data") {
+					var layer_group = chart.selectAll(".layer").data(separate_data)
+
+					var rects = layer_group.selectAll("rect").data(function(d) { return d; })
+								.transition()
+								.duration(2000)
+									.attr("x", function(d, i) { return x_scale(i) })
+									.attr("y", function(d) {return y_scale(d.y0 + d.y)})
+									.attr("width", x_scale.rangeBand())
+									.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
+
+				}
+			}
 		}
 
 	}
@@ -287,9 +333,10 @@ var separate_charts = (function() {
 
 })();
 
+var data = events_with_URL
 $(document).ready(function() {
 	$(".chart-div").each(function() {
-		separate_charts.setup(format_separated_data(events_with_URL));
+		separate_charts.setup(format_separated_data(data));
 	})
 	// var events = data_process.process_event_types(events_with_URL).video_events
 	// 	stacked_chart.setup(data_process.format_events(data_process.process_videos(events)))
