@@ -1,7 +1,7 @@
 var generateTimestamp= function(){
     var year = '2013'
     var month = '09'
-    var day = ""+Math.floor((Math.random()*30)+1)
+    var day = ""+Math.floor((Math.random()*30)+2)
     if (day.length == 1){
         day = '0'+day
     }
