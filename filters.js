@@ -1,4 +1,4 @@
-var filtered_data = events_with_URL
+var filtered_data = data
 var currentView='all'
 var setupFilters= function(){
     var timeFilterBar = $("<div id='time'>Filter by Time<select class='time'><option value='all'>All</option><option value='compWeek'>Compiled Weekly View</option></select></div>")
@@ -27,7 +27,7 @@ var setupFilters= function(){
 }
 
 var applyFilters=function(){
-    var filtered_data=$.extend(true, [], events_with_URL)
+    var filtered_data=$.extend(true, [], data)
     var timeFilter = $('.time').val()
     var upper = $( "#grade-slider" ).slider( "values", 1 )
     var lower = $( "#grade-slider" ).slider( "values", 0 )
