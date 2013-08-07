@@ -83,3 +83,17 @@ var obj_date_sort=function (obj1, obj2){
     if (date1 < date2) return -1;
     return 0;
 }
+
+var getTimeRange=function(list,start,end){
+    var newList=[]
+    var startMS=start.valueOf()
+    var endMS=end.valueOf()
+    for (var i=0;i<list.length;i++){
+        var currentDate = new Date(list[i]['time'])
+        var currentMS= currentDate.valueOf()
+        if ((currentMS>startMS)&&(currentMS<endMS)){
+            newList.push(list[i])
+        }
+    }
+    return newList
+}
