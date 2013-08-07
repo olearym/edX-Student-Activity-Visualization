@@ -217,9 +217,9 @@ var data_process = (function() {
 		var stacked_data = [];
 		var total_minutes_by_hour = [];
 
-		var first_event = new Date(video_events[0].time);
-		var last_event = new Date(video_events[video_events.length - 1].time);
-		var first_video_event = video_events[0];
+		var first_event = new Date(video_events[0][0].time);
+		var last_event = new Date(video_events[0][video_events[0].length - 1].time);
+		var first_video_event = video_events[0][0];
 		if (new Date(problem_events[0].time).getTime() < new Date(first_event.time).getTime()) {
 			first_event = new Date(problem_events[0].time);
 		}
@@ -231,58 +231,67 @@ var data_process = (function() {
 		round_date(last_event)
 
 		var events_by_hour = make_events_by_hour(first_event, last_event);
-		var filled_events_by_hour = $.extend(true, {}, events_by_hour)
+		var stacked_data = []
 
-		var unpaused_events = {}
+		for (var index = 0; index < video_events.length; index++) {
+			var filled_events_by_hour = $.extend(true, {}, events_by_hour)
 
-		for (var i = 0; i < video_events.length; i++) {
-			var num_minutes = []
+			var unpaused_events = {}
 
-			var event = video_events[i]
-			var event_type = event.event_type
-			var user = event.username
+			for (var i = 0; i < video_events[index].length; i++) {
+				var num_minutes = []
 
-			if (event_type == "play_video") {
-				unpaused_events[user] = event
-			}
-			else if (event_type = "pause_video") {
-				var play_event = unpaused_events[user]
-				var event_hour = new Date(event.time).getHours()
-				var event_date = new Date(event.time);
-				var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
-				var play_event_hour = new Date(play_event.time).getHours()
-				var minutes = (new Date(event.time).getTime() - new Date(play_event.time).getTime())/(60000)
-				
-				if (play_event_hour == event_hour) {
-					filled_events_by_hour[event_day][event_hour].push(minutes)
+				var event = video_events[index][i]
+				var event_type = event.event_type
+				var user = event.username
+
+				if (event_type == "play_video") {
+					unpaused_events[user] = event
 				}
-				else {
-					var rounded_hour = new Date(event.time)
-					round_date(rounded_hour)
-
-					var before_minutes = (rounded_hour.getTime() - new Date(play_event.time).getTime())/(60000)
-					var after_minutes = (new Date(event.time).getTime() - rounded_hour.getTime())/(60000)
-
+				else if (event_type = "pause_video") {
+					var play_event = unpaused_events[user]
+					var event_hour = new Date(event.time).getHours()
+					var event_date = new Date(event.time);
 					var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
-					var play_event_date = new Date(play_event.time);
-					var play_event_day = (play_event_date.getMonth() + 1) +"/"+event_date.getDate();
-
-					filled_events_by_hour[event_day][event_hour].push(before_minutes)
-					filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
-				}
-			}
-
-		}
-		for (var i in events_by_hour) {
-				for (var j in events_by_hour[i]) {
-					var minutes = 0
-					for (var k = 0; k < filled_events_by_hour[i][j].length; k++) {
-						minutes += filled_events_by_hour[i][j][k]
+					var play_event_hour = new Date(play_event.time).getHours()
+					var minutes = (new Date(event.time).getTime() - new Date(play_event.time).getTime())/(60000)
+					
+					if (play_event_hour == event_hour) {
+						filled_events_by_hour[event_day][event_hour].push(minutes)
 					}
-					num_minutes.push({"y": minutes});
-				}
-			}
+					else {
+						var rounded_hour = new Date(event.time)
+						round_date(rounded_hour)
 
+						var before_minutes = (rounded_hour.getTime() - new Date(play_event.time).getTime())/(60000)
+						var after_minutes = (new Date(event.time).getTime() - rounded_hour.getTime())/(60000)
+
+						var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
+						var play_event_date = new Date(play_event.time);
+						var play_event_day = (play_event_date.getMonth() + 1) +"/"+event_date.getDate();
+
+						filled_events_by_hour[event_day][event_hour].push(before_minutes)
+						filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
+					}
+				}
+
+			}
+			for (var i in events_by_hour) {
+					for (var j in events_by_hour[i]) {
+						var minutes = 0
+						for (var k = 0; k < filled_events_by_hour[i][j].length; k++) {
+							minutes += filled_events_by_hour[i][j][k]
+						}
+						num_minutes.push({"y": minutes});
+					}
+				}
+			stacked_data.push(num_minutes)
+			}
+			out.stacked_data = stacked_data;
+			out.first_event = first_event;
+			out.last_event = last_event;
+			out.data = stacked_data
+			return out;
 		}
 
 		exports.video_minutes = video_minutes;
@@ -295,12 +304,13 @@ var data_process = (function() {
 	
 })();
 
-var test = function(data) {
-	var video_events = data_process.process_event_types(data).video_events;
-	var problem_events = data_process.process_event_types(data).problem_events;
+// var test = function(data) {
+// 	var video_events = data_process.process_event_types(data).video_events;
+// 	var problem_events = data_process.process_event_types(data).problem_events;
+// 	console.log(data_process.process_videos(video_events))
 
-	data_process.video_minutes(problem_events, video_events);
-}
+// 	console.log(data_process.video_minutes(problem_events, data_process.process_videos(video_events)));
+// }
 
 test(events_with_URL)
 
