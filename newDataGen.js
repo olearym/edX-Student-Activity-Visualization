@@ -132,8 +132,12 @@ var makeFullData = function(numberStudents, avgActions){
                         finalList[i][j-1]['event_type']='seq_goto'
                     }
                     else{
+                        var random5to25=5+Math.floor(Math.random()*21)
                         finalList[i][j]['event_type']='pause_video'
                         finalList[i][j]['URL']=URL
+                        var millisecs = finalList[i][j-1]['time'].valueOf()+(random5to25*60000)
+                        var dateSet = new Date(millisecs)
+                        finalList[i][j]['time']=dateSet
                     }
                 }
             }

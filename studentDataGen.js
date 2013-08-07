@@ -85,11 +85,14 @@ var obj_date_sort=function (obj1, obj2){
 }
 
 //var sortByWeeks = function(list){
+//    var newList=[]
 //    var copyList = $.extend(true, [], list)//Creates a deep copy
 //    copyList.sort(obj_date_sort)
 //    for (var i=0;i<copyList.length;i++){
 //        copyList[i]['time']=new Date( copyList[i]['time'])
-//        copyList[i]['day']= copyList[i]['time'].d
+//        copyList[i]['day']= copyList[i]['time'].getDay()
 //    }
-//    
+//    for (var i=0;i<copyList.length;i++){
+//        var
+//    }
 //}
