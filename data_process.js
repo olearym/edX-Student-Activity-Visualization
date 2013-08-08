@@ -216,26 +216,31 @@ var data_process = (function() {
 
 		var stacked_data = [];
 		var total_minutes_by_hour = [];
+		var events = [problem_events, video_events]
 
 		var first_event
-		// for (var index = 0; index < events.length; index++) {
-		// 	if (events[index][0] !== undefined) {
-		// 		first_event = new Date(events[index][0].time);
-		// 		break
-		// 	}
-		// }
-		// if (first_event == undefined) {
-		// 	var stacked_data = [] 
-		// 	for (var i = 0; i < events.length; i++) {
-		// 		stacked_data.push([])
-		// 	}
-		// 	out.stacked_data = stacked_data
-		// 	return out
-		// }
+		for (var index = 0; index < events.length; index++) {
+			if (events[index][0] !== undefined) {
+				first_event = new Date(events[index][0].time);
+				break
+			}
+		}
+		var first_video_event 
+		if (video_events[0] !== undefined) {
+			first_video_event = video_events[0][0]
+		}
+		if (first_event == undefined || first_video_event == undefined) {
+			var stacked_data = [] 
+			for (var i = 0; i < events.length; i++) {
+				stacked_data.push([])
+			}
+			out.stacked_data = stacked_data
+			return out
+		}
 
-		var first_event = new Date(video_events[0][0].time);
+		// var first_event = new Date(video_events[0][0].time);
 		var last_event = new Date(video_events[0][video_events[0].length - 1].time);
-		var first_video_event = video_events[0][0];
+		// var first_video_event = video_events[0][0];
 		if (new Date(problem_events[0].time).getTime() < new Date(first_event.time).getTime()) {
 			first_event = new Date(problem_events[0].time);
 		}
