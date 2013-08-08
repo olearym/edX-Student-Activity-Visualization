@@ -22,11 +22,11 @@
 	overflow-x: auto;
 	overflow-y: hidden;
 	position: relative;
-	top: -300px;
+	top: -275px;
 	right: -8%;
 }
 .chart-div {
-	width: 75%;
+	width: 100%;
 	border: 1px solid gray;
 	height: 80%;
 	overflow: hidden;
@@ -34,7 +34,7 @@
 
 .legend {
 	position: relative;
-	top: -910px;
+	top: -825px;
 	float: right;
         
 }
@@ -68,18 +68,23 @@
     font-size:12pt;
 }
 
+.problem_data_chart {
+	position: relative;
+
+}
+
 .video_data_labels {
 	position: relative;
-	top: -300px;
+	top: -275px;
 }
 
 .video_data_chart {
 	position: relative;
-	top: -600px
+	top: -550px
 }
 
 .video_data_chart line{
 	position: relative;
-	top: 300px;
+	top: 275px;
 }
             
