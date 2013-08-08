@@ -26,15 +26,15 @@
 	right: -8%;
 }
 .chart-div {
-	width: 100%;
+	width: 75%;
 	border: 1px solid gray;
-	height: 620px;
+	height: 80%;
 	overflow: hidden;
 }
 
 .legend {
 	position: relative;
-	top: -610px;
+	top: -910px;
 	float: right;
         
 }

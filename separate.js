@@ -9,7 +9,7 @@ var format_separated_data = function(data) {
 
 	var processed_data = data_process.format_events([problem_events, video_events]).stacked_data;
 	var problem_data = processed_data[0];
-	var video_data = data_process.format_events(data_process.process_videos(video_events));
+	var video_data = data_process.video_minutes(problem_events, data_process.process_videos(video_events));
 	
 	var first_event = data_process.format_events([problem_events, video_events]).first_event;
 	var last_event = data_process.format_events([problem_events, video_events]).last_event;
@@ -85,6 +85,7 @@ var separate_charts = (function() {
 				var y_scale = d3.scale.linear()
 								.domain([0, y_stack_max]).range([chart_height, 0]);
 				var color = ["#9467bd", "#c5b0d5", "#e377c2", "#f7b6d2", "#c7c7c7"]
+				var legend_text = ["Video 1", "Video 2", "Video 3", "Video 4", "Video 5"]
 				
 			}
 
@@ -127,7 +128,7 @@ var separate_charts = (function() {
 			constant_labels.selectAll(".y-scale-label").data(y_scale.ticks(10))
 				.enter().append("text")
 					.attr("class", "y-scale-label")
-					.attr("x", "60%")
+					.attr("x", "50%")
 					.attr("y", y_scale)
 					.attr("text-anchor", "end")
 					.attr("dy", "0.3em")
@@ -192,6 +193,15 @@ var separate_charts = (function() {
 			}	
 			
 			if (data_types[i] == "problem_data") {
+				
+				constant_labels.append("text")
+			        .attr("transform", "rotate(-90)")
+			        .attr("y", -10)
+			        .attr("x", 0 - (outer_height / 2) + 15)
+			        .attr("dy", "1em")
+			        .style("text-anchor", "middle")
+			        .text("Problem Attempts");
+
 				var layer_group = chart.selectAll(".layer").data([separate_data])
 								.enter().append('g')
 									.attr("class", "layer")
@@ -205,6 +215,45 @@ var separate_charts = (function() {
 									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
 			}
 			else if (data_types[i] == "video_data") {
+				
+				constant_labels.append("text")
+			        .attr("transform", "rotate(-90)")
+			        .attr("y", -10)
+			        .attr("x", 0 - (outer_height / 2) + 15)
+			        .attr("dy", "1em")
+			        .style("text-anchor", "middle")
+			        .text("Total Minutes Watched");
+
+				var legend = d3.select(".chart-div")
+						.append("svg")
+							.attr("class", "legend")
+							.attr("height", outer_height)
+							.attr("width", "10%")
+							.attr("position", "relative")
+							.attr("float", "right")
+						.append("g")
+							.attr("y", 25)
+							.attr("class", "legend-holder");
+
+				legend.selectAll("rect")
+						.data(data[data_types[i]].stacked_data)
+						.enter()
+					.append("rect")
+						.attr("x", 0)
+						.attr("y", function(d, i) { return i * 20 + 20; })
+						.attr("width", 10)
+						.attr("height", 10)
+						.style("fill", function(d, i) { return color[i]; });
+
+				legend.selectAll("text")
+						.data(data[data_types[i]].stacked_data)
+						.enter()
+					.append("text")
+						.attr("x", 12)
+						.attr("y", function(d, i) { return i * 20 + 30; })
+						.attr("font-size", "9px")
+						.text(function(d, i) {return legend_text[i];});
+
 				var layer_group = chart.selectAll(".layer").data(separate_data)
 								.enter().append('g')
 									.attr("class", "layer")
