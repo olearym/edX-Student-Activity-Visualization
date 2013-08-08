@@ -217,6 +217,22 @@ var data_process = (function() {
 		var stacked_data = [];
 		var total_minutes_by_hour = [];
 
+		var first_event
+		// for (var index = 0; index < events.length; index++) {
+		// 	if (events[index][0] !== undefined) {
+		// 		first_event = new Date(events[index][0].time);
+		// 		break
+		// 	}
+		// }
+		// if (first_event == undefined) {
+		// 	var stacked_data = [] 
+		// 	for (var i = 0; i < events.length; i++) {
+		// 		stacked_data.push([])
+		// 	}
+		// 	out.stacked_data = stacked_data
+		// 	return out
+		// }
+
 		var first_event = new Date(video_events[0][0].time);
 		var last_event = new Date(video_events[0][video_events[0].length - 1].time);
 		var first_video_event = video_events[0][0];
@@ -269,7 +285,7 @@ var data_process = (function() {
 						var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
 						var play_event_date = new Date(play_event.time);
 						var play_event_day = (play_event_date.getMonth() + 1) +"/"+event_date.getDate();
-
+						console.log(event_day, play_event_day, event_date, play_event_date)
 						filled_events_by_hour[event_day][event_hour].push(before_minutes)
 						filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
 					}
@@ -312,6 +328,6 @@ var data_process = (function() {
 // 	console.log(data_process.video_minutes(problem_events, data_process.process_videos(video_events)));
 // }
 
-test(events_with_URL)
+// test(events_with_URL)
 
 
