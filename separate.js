@@ -24,7 +24,7 @@ var separate_charts = (function() {
 
 	var exports = {};
 
-	var outer_height = 275;
+	var outer_height = 200;
 	var outer_width = 3000;
 
 	var margin = { top: 20, right: 20, bottom: 20, left: 20 }

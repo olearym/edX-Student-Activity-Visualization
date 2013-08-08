@@ -22,7 +22,7 @@
 	overflow-x: auto;
 	overflow-y: hidden;
 	position: relative;
-	top: -275px;
+	top: -200px;
 	right: -8%;
 }
 .chart-div {
@@ -34,7 +34,7 @@
 
 .legend {
 	position: relative;
-	top: -825px;
+	top: -600px;
 	float: right;
         
 }
@@ -75,16 +75,16 @@
 
 .video_data_labels {
 	position: relative;
-	top: -275px;
+	top: -200px;
 }
 
 .video_data_chart {
 	position: relative;
-	top: -550px
+	top: -400px
 }
 
 .video_data_chart line{
 	position: relative;
-	top: 275px;
+	top: 200px;
 }
             
