@@ -3,6 +3,9 @@
 // are due in the class. 
 var due_dates = {"PSet 1": new Date(2013, 8, 10, 21, 0, 0, 0), "PSet 2": new Date(2013, 8, 20, 21, 0, 0, 0), "Quiz 1":new Date(2013, 8, 25, 18, 0, 0, 0)}
 
+// takes a raw data variable and applies several functions from data_process in order to return
+// an object with all of the information needed to chart the data.
+// see data_process.js for function explanations
 var format_separated_data = function(data) {
 	var video_events = data_process.process_event_types(data).video_events;
 	var problem_events = data_process.process_event_types(data).problem_events;
@@ -20,10 +23,12 @@ var format_separated_data = function(data) {
 			"last_event": last_event};
 }
 
+// contains function to create separate charts for video and problem events
 var separate_charts = (function() {
 
 	var exports = {};
 
+	// sizes of individual charts
 	var outer_height = 200;
 	var outer_width = 3000;
 
@@ -37,6 +42,7 @@ var separate_charts = (function() {
 
 	var setup = function(data) {
 
+		// set chart width depending on how long of a data set we are charting
 		if (data.problem_data.length < 200) {
 			outer_width = 1200;
 			chart_width = outer_width - margin.left - margin.right;
@@ -47,11 +53,14 @@ var separate_charts = (function() {
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
+		// because setup is called to regraph data sometimes, remove any existing chart
 		$('.chart-div').children().remove();
 		$('.due-dates').remove();
 
+		// loop through data_types - created this way to support additional data types
 		for (var i = 0; i < data_types.length; i++) {
 
+			// problem data is not a stacked chart
 			if (data_types[i] == "problem_data") {
 			
 				var separate_data = data[data_types[i]]
@@ -68,6 +77,8 @@ var separate_charts = (function() {
 						    .domain([0, 2])
 						    .range(["#aad", "#556"]);
 			}
+			// video data is a stacked chart so these variables need to be different than those belonging
+			// to problem data
 			else if (data_types[i] == "video_data") {
 				var stack = d3.layout.stack();
 				var separate_data = stack(data[data_types[i]].stacked_data)
@@ -90,6 +101,7 @@ var separate_charts = (function() {
 				
 			}
 
+			// create a container for y-axis markings. This is recreated each time the graph is redrawn.
 			var constant_labels = d3.select(".chart-div")
 						.append("svg")
 							.attr("class", "labels")
@@ -100,14 +112,19 @@ var separate_charts = (function() {
 							.attr("class", "labels-holder")
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+			// create container for the chart, giving it a class with the data type name so it can
+			// be selected easily
 			$(".chart-div").append($("<div class='chart-holder "+data_types[i]+"_chart'></div>"));
 
-			// counters svg annoyingness when making new chart
+			// counters svg annoyingness when making new chart - moves new labels to the front and deletes old
+			// labels if somehow previously existing labels weren't deleted.
+			// may not be needed.
 			if ($("."+data_types[i]+"_labels").length > 1) {
 				$("."+data_types[i]+"_labels")[1].parentNode.insertBefore($("."+data_types[i]+"_labels")[1],$("."+data_types[i]+"_labels")[1].parentNode.firstChild);
 				$("."+data_types[i]+"_labels")[1].remove();
 			}
 
+			// create svg chart
 			var chart_holder = d3.select("."+data_types[i]+"_chart")
 			var chart = chart_holder.append("svg")
 							.attr("class", "chart")
@@ -118,6 +135,7 @@ var separate_charts = (function() {
 
 			chart.selectAll("line").remove()
 
+			// make y axis lines
 			chart.selectAll("line").data(y_scale.ticks(10))
 				.enter().append("line")
 					.attr("x1", 0)
@@ -126,6 +144,7 @@ var separate_charts = (function() {
 					.attr("y2", y_scale)
 					.attr("opacity", ".5");
 
+			// make y axis number labels
 			constant_labels.selectAll(".y-scale-label").data(y_scale.ticks(10))
 				.enter().append("text")
 					.attr("class", "y-scale-label")
@@ -137,6 +156,7 @@ var separate_charts = (function() {
 					.attr("font-size", "9px")
 					.text(String);
 
+			// make day labels for x axis
 			var xAxis = d3.svg.axis()
 			    .scale(x_label_scale)
 			    .orient('bottom')
@@ -166,6 +186,13 @@ var separate_charts = (function() {
 			    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
 			    .call(xAxis);	
 
+			chart.append('g')
+			    .attr('class', 'x-ticks')
+			    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
+			    .attr('opacity', '.3')
+			    .call(xTicks);
+
+			// create week landmark lines
 			chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
 				.enter().append("line")
 					.attr("x1", x_label_scale)
@@ -179,14 +206,9 @@ var separate_charts = (function() {
 					.attr("x", x_label_scale)
 					.attr("y", -3)
 					.attr("opacity", ".5")
-					.text(function(d, i) { console.log(i); return "Week " + (i+1);});
+					.text(function(d, i) {return "Week " + (i+1);});
 
-			chart.append('g')
-			    .attr('class', 'x-ticks')
-			    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
-			    .attr('opacity', '.3')
-			    .call(xTicks);
-
+			// create landmark line for each assignment
 			for (date in due_dates) {
 				var first_day = new Date(data.first_event.getTime())
 				data_process.round_date(first_day)
@@ -200,8 +222,6 @@ var separate_charts = (function() {
 								.attr("class", "date-tick")
 								.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+8)+')');
 				dueMark.append("line")
-					// .attr("x1", 0)
-					// .attr("x2", chart_width)
 					.attr("y1", -10)
 					.attr("y2", -chart_height - 5)
 					.attr("opacity", ".8");
@@ -212,6 +232,7 @@ var separate_charts = (function() {
 					.text(date);
 			}	
 			
+			// create y-axis label and bars for problem data chart
 			if (data_types[i] == "problem_data") {
 				
 				constant_labels.append("text")
@@ -234,6 +255,7 @@ var separate_charts = (function() {
 									.attr("width", x_scale.rangeBand())
 									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
 			}
+			// create y-axis label, legend, and stacked bars for video data chart
 			else if (data_types[i] == "video_data") {
 				
 				constant_labels.append("text")
@@ -289,10 +311,13 @@ var separate_charts = (function() {
 		}
 
 	}
-
+	// called when data is filtered by grade
 	var redraw = function(data) {
 
 		for (var i = 0; i < data_types.length; i++) {
+			
+			// data.first_event is undefined if the filtered data set is empty.
+			// sets all bars to zero but doesn't change any labels.
 			if (data.first_event == undefined) {
 
 				var layer_groups = d3.select("."+data_types[i]+"_chart").select('.chart').selectAll(".layer")
@@ -341,7 +366,9 @@ var separate_charts = (function() {
 				var chart_holder = d3.select("."+data_types[i]+"_chart")
 
 				var chart = chart_holder.select(".chart")
-			
+				
+
+				// redraw y-axis tickmarks
 				d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
 
 				chart.selectAll("line").data(y_scale.ticks(10))
@@ -368,6 +395,7 @@ var separate_charts = (function() {
 						.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 						.text(String);
 
+				// resize bars based on filtered data
 				if (data_types[i] == "problem_data") {
 					var layer_group = chart.selectAll(".layer").data([separate_data])
 
@@ -407,8 +435,6 @@ $(document).ready(function() {
 	$(".chart-div").each(function() {
 		separate_charts.setup(format_separated_data(data));
 	})
-	// var events = data_process.process_event_types(events_with_URL).video_events
-	// 	stacked_chart.setup(data_process.format_events(data_process.process_videos(events)))
 })
 
 
