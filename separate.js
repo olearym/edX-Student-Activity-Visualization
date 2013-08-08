@@ -84,7 +84,8 @@ var separate_charts = (function() {
 								.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
 				var y_scale = d3.scale.linear()
 								.domain([0, y_stack_max]).range([chart_height, 0]);
-				var color = ["#9467bd", "#c5b0d5", "#e377c2", "#f7b6d2", "#c7c7c7"]
+				// var color = ["#9467bd", "#c5b0d5", "#e377c2", "#f7b6d2", "#c7c7c7"]
+				var color = d3.scale.category20b()
 				var legend_text = ["Video 1", "Video 2", "Video 3", "Video 4", "Video 5"]
 				
 			}
@@ -152,6 +153,7 @@ var separate_charts = (function() {
 			    .tickSize(0)
 			    .tickPadding(41);
 
+
 			chart.append('g')
 				.attr("class", "due-dates")
 				.attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')');
@@ -163,6 +165,21 @@ var separate_charts = (function() {
 			    .attr('class', 'x-axis')
 			    .attr('transform', 'translate(0, ' + (chart_height - margin.top - margin.bottom) + ')')
 			    .call(xAxis);	
+
+			chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+				.enter().append("line")
+					.attr("x1", x_label_scale)
+					.attr("x2", x_label_scale)
+					.attr("y1", chart_height + 5)
+					.attr("y2", 0)
+					.attr("opacity", ".5");
+
+			chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+				.enter().append("text")
+					.attr("x", x_label_scale)
+					.attr("y", -3)
+					.attr("opacity", ".5")
+					.text(function(d, i) { console.log(i); return "Week " + (i+1);});
 
 			chart.append('g')
 			    .attr('class', 'x-ticks')
@@ -178,14 +195,17 @@ var separate_charts = (function() {
 
 				var dueTick = chart.append("g")
 								.attr("class", "date-tick")
-								.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+27)+')');
+								.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(-4)+')');
 				var dueMark = chart.append("g")
 								.attr("class", "date-tick")
 								.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+8)+')');
-				dueMark.append("text")
-					.attr("text-anchor", "middle")
-					.attr('opacity', '.5')
-					.text("|");
+				dueMark.append("line")
+					// .attr("x1", 0)
+					// .attr("x2", chart_width)
+					.attr("y1", -10)
+					.attr("y2", -chart_height - 5)
+					.attr("opacity", ".8");
+
 				dueTick.append('text')
 					.attr("text-anchor", "middle")
 					.attr('opacity', '.5')
@@ -243,7 +263,7 @@ var separate_charts = (function() {
 						.attr("y", function(d, i) { return i * 20 + 20; })
 						.attr("width", 10)
 						.attr("height", 10)
-						.style("fill", function(d, i) { return color[i]; });
+						.style("fill", function(d, i) { return color(i); });
 
 				legend.selectAll("text")
 						.data(data[data_types[i]].stacked_data)
@@ -257,7 +277,7 @@ var separate_charts = (function() {
 				var layer_group = chart.selectAll(".layer").data(separate_data)
 								.enter().append('g')
 									.attr("class", "layer")
-									.style("fill", function(d, i) {return color[i];});
+									.style("fill", function(d, i) {return color(i);});
 
 				var rects = layer_group.selectAll("rect").data(function(d) { return d; })
 						.enter().append("rect")
