@@ -11,7 +11,7 @@ var data_process = (function() {
 	var exports = {};
 
 	// sorts events into chronological order and separates them into different event types.
-	// returns an object with event types as keys and arrays as values.
+	// returns an object with event types as keys and arrays of events as values.
 	var process_event_types = function(data) {
 
 		var video_events = []
@@ -39,6 +39,7 @@ var data_process = (function() {
 		return {"video_events":video_events, "problem_events":problem_events}
 	}
 
+	// rounds dates down to the hour.
 	var round_date = function(date) {
 		date.setMinutes(0);
 		date.setSeconds(0);
@@ -46,16 +47,25 @@ var data_process = (function() {
 
 	}
 
+	// returns an object that looks like {Date: {0: [], 1: [], 2: [],....}}
+	// each day between the day that the first event occurs and the day that
+	// the last event occurs has 24 "hour" attributes, each containing an empty list.
+	// first_event and last_event are JavaScript Date objects
 	var make_events_by_hour = function(first_event, last_event) {
 
 		var events_by_hour = {};
 
+		// get JavaScript Date objects rounded down to the day for
+		// both first_event and last_event
 		var first_day = new Date(first_event.getTime());
 		first_day.setHours(0);
 		var last_day = new Date(last_event.getTime());
 		last_day.setHours(0);
+
+		// get the number of days between the first event and last event
 		var num_days = Math.ceil((last_day.getTime() - first_day.getTime())/(3600 * 1000 * 24));
 
+		// create each day
 		for (var i = 0; i <= num_days; i++) {
 			var ms_day = 3600*1000*24;
 			
@@ -63,11 +73,11 @@ var data_process = (function() {
 			var event_day = (event_date.getMonth() + 1) +"/"+(event_date.getDate());
 			events_by_hour[event_day] = {};
 
+			// create 24 hours for this day
 			for (var j = 0; j < 24; j++) {
 		 		events_by_hour[event_day][j] = [];
 		 	}
 		}
-
 		return events_by_hour
 	}
 
@@ -77,22 +87,21 @@ var data_process = (function() {
 	var format_events = function(events) {
 		var out = {};
 
-		// if the entered arrays do not have values, return an empty object. else, create arrays
-		// to chart.
-		// if (events[0].length == 0 || events[1].length == 0) 
 
 		// these two variables will be filled and returned
 		var stacked_data = [];
 		var total_events_by_hour = [];
 
 		var first_event
-		// find the first event and the input array containing it
+		// find an event - if all input arrays are empty, first_event will remain undefined
 		for (var index = 0; index < events.length; index++) {
 			if (events[index][0] !== undefined) {
 				first_event = new Date(events[index][0].time);
 				break
 			}
 		}
+
+		// if all input arrays are empty, format_events returns an array of empty arrays
 		if (first_event == undefined) {
 			var stacked_data = [] 
 			for (var i = 0; i < events.length; i++) {
@@ -101,20 +110,19 @@ var data_process = (function() {
 			out.stacked_data = stacked_data
 			return out
 		}
-		
-		var first_event_list = events[0];
+
+		// find the first event
 		for (var index = 1; index < events.length; index++) {
 			if (events[index][0] !== undefined) {
 				var looped_event = new Date(events[index][0].time);
 				if (looped_event.getTime() < first_event.getTime()) {
 					first_event = looped_event;
-					first_event_type = events[index];
 				}
 			}
 		}
 		round_date(first_event);
 
-		// find the last event and the input array containing it
+		// find the last event
 		var last_event = new Date(events[0][events[0].length - 1].time);
 		var last_event_type = events[0];
 		for (var index = 1; index < events.length; index++) {
@@ -122,40 +130,24 @@ var data_process = (function() {
 				var looped_event = new Date(events[index][events[index].length - 1].time);
 				if (looped_event.getTime() > last_event.getTime()) {
 					last_event = looped_event;
-					last_event_type = events[index];
 				}
 			}
 		}
 		round_date(last_event);
 
-		var events_by_hour = {};
+		// create an object with days and hours, the hours will be filled
+		// with event objects
+		var events_by_hour = make_events_by_hour(first_event, last_event)
 
-		var first_day = new Date(first_event.getTime());
-		first_day.setHours(0);
-		var last_day = new Date(last_event.getTime());
-		last_day.setHours(0);
-		var num_days = Math.ceil((last_day.getTime() - first_day.getTime())/(3600 * 1000 * 24));
-
-		for (var i = 0; i <= num_days; i++) {
-			var ms_day = 3600*1000*24;
-			
-			var event_date = new Date(first_event.getTime() + i*ms_day);
-			var event_day = (event_date.getMonth() + 1) +"/"+(event_date.getDate());
-			events_by_hour[event_day] = {};
-
-			for (var j = 0; j < 24; j++) {
-		 		events_by_hour[event_day][j] = [];
-		 	}
-		}
-
-
+		// loop through each group of events in the input array
 		for (var index = 0; index < events.length; index++) {
 
 			var num_events = [];
+			// copy events_by_hour so it can be modified but can be used again in
+			// the next iteration
 			var filled_events_by_hour = $.extend(true, {}, events_by_hour)
 
-			// make events_by_hour
-			// looks like {"date" : {0: [...], 1: [...], ...}}
+			// fill filled_events_by_hour with events
 			for (var i = 0; i < events[index].length; i++) {
 
 				var event_date = new Date(events[index][i].time);
@@ -165,7 +157,7 @@ var data_process = (function() {
 				filled_events_by_hour[event_day][event_hour].push(event);
 			}
 
-			// make num_events from events_by_hour
+			// make num_events from events_by_hour - counts the number of events in each hour
 			for (var i in events_by_hour) {
 				for (var j in events_by_hour[i]) {
 					num_events.push({"y": filled_events_by_hour[i][j].length});
@@ -188,7 +180,7 @@ var data_process = (function() {
 	}
 
 	// returns array of arrays, with each inside array corresponding to each video
-	// this can be processed correctly by format_events
+	// this can be processed correctly by format_events and video_minutes
 	var process_videos = function(video_data) {
 		var out = {}
 		var sorted_videos = {}
@@ -211,6 +203,8 @@ var data_process = (function() {
 
 	}
 
+	// works like format_events, except instead of counting the number of events,
+	// counts the number of minutes of video watched per hour
 	var video_minutes = function(problem_events, video_events) {
 		var out = {};
 
@@ -238,11 +232,22 @@ var data_process = (function() {
 			return out
 		}
 
+		for (var i = 0; i< video_events.length; i++) {
+			if (new Date(video_events[i][0].time).getTime() < first_event.getTime()) {
+				first_event = new Date(video_events[i][0].time);
+			}
+		}
+
 		var last_event = new Date(video_events[0][video_events[0].length - 1].time);
-		if (new Date(problem_events[0].time).getTime() < new Date(first_event.time).getTime()) {
+		for (var i = 0; i< video_events.length; i++) {
+			if (new Date(video_events[i][video_events[i].length - 1].time).getTime() > last_event.getTime()) {
+				last_event = new Date(video_events[i][video_events[i].length - 1].time);
+			}
+		}
+		if (new Date(problem_events[0].time).getTime() < first_event.getTime()) {
 			first_event = new Date(problem_events[0].time);
 		}
-		if (new Date(problem_events[problem_events.length - 1].time).getTime() > new Date(last_event.time).getTime()) {
+		if (new Date(problem_events[problem_events.length - 1].time).getTime() > last_event.getTime()) {
 			last_event = new Date(problem_events[problem_events.length - 1].time);
 		}
 
@@ -272,8 +277,17 @@ var data_process = (function() {
 					var event_hour = new Date(event.time).getHours()
 					var event_date = new Date(event.time);
 					var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
+
+					if (play_event == undefined) {
+						play_event = event
+						var play_event_date = new Date(play_event.time)
+						round_date(play_event_date)
+						var minutes = (new Date(event.time).getTime() - play_event_date.getTime())/(60000)
+					} else {
+						var minutes = (new Date(event.time).getTime() - new Date(play_event.time).getTime())/(60000)
+					}
+
 					var play_event_hour = new Date(play_event.time).getHours()
-					var minutes = (new Date(event.time).getTime() - new Date(play_event.time).getTime())/(60000)
 					
 					if (play_event_hour == event_hour) {
 						filled_events_by_hour[event_day][event_hour].push(minutes)
@@ -289,7 +303,11 @@ var data_process = (function() {
 						var play_event_date = new Date(play_event.time);
 						var play_event_day = (play_event_date.getMonth() + 1) +"/"+event_date.getDate();
 						filled_events_by_hour[event_day][event_hour].push(before_minutes)
-						filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
+						if (filled_events_by_hour[play_event_day] !== undefined) {
+							filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
+						} else {
+							console.log(play_event_day, play_event_date, event_date)
+						}
 					}
 				}
 
