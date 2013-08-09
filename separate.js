@@ -278,7 +278,7 @@ var separate_charts = (function() {
 							.attr("class", "legend-holder");
 
 				legend.selectAll("rect")
-						.data(data[data_types[i]].stacked_data)
+						.data(separate_data)
 						.enter()
 					.append("rect")
 						.attr("x", 0)
@@ -288,7 +288,7 @@ var separate_charts = (function() {
 						.style("fill", function(d, i) { return color(i); });
 
 				legend.selectAll("text")
-						.data(data[data_types[i]].stacked_data)
+						.data(separate_data)
 						.enter()
 					.append("text")
 						.attr("x", 12)
@@ -394,6 +394,37 @@ var separate_charts = (function() {
 						.attr("font-size", "9px")
 						.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 						.text(String);
+
+				// redraw x-axis
+				chart.selectAll('.x-axis').remove();
+				chart.selectAll('.x-ticks').remove();
+
+				var xAxis = d3.svg.axis()
+				    .scale(x_label_scale)
+				    .orient('bottom')
+				    .ticks(d3.time.days, 1)
+				    .tickFormat(d3.time.format('%a %d'))
+				    .tickSize(0)
+				    .tickPadding(50);
+				
+				var xTicks = d3.svg.axis()
+				    .scale(x_label_scale)
+				    .orient('bottom')
+				    .ticks(d3.time.hours, 12)
+				    .tickFormat("|")
+				    .tickSize(0)
+				    .tickPadding(41);
+
+				 chart.append('g')
+				    .attr('class', 'x-axis')
+				    .attr('transform', 'translate(20, ' + (chart_height - margin.top) + ')')
+				    .call(xAxis);	
+
+				chart.append('g')
+				    .attr('class', 'x-ticks')
+				    .attr('transform', 'translate(20, ' + (chart_height - margin.top) + ')')
+				    .attr('opacity', '.3')
+				    .call(xTicks);
 
 				// resize bars based on filtered data
 				if (data_types[i] == "problem_data") {
