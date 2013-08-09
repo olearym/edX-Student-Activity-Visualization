@@ -138,6 +138,7 @@ var separate_charts = (function() {
 			// make y axis lines
 			chart.selectAll("line").data(y_scale.ticks(10))
 				.enter().append("line")
+					.attr("class", "y-tick")
 					.attr("x1", 0)
 					.attr("x2", chart_width)
 					.attr("y1", y_scale)
@@ -369,16 +370,27 @@ var separate_charts = (function() {
 				
 
 				// redraw y-axis tickmarks
-				d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
+				//d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
 
-				chart.selectAll("line").data(y_scale.ticks(10))
+				chart.selectAll(".y-tick line").data(y_scale.ticks(10))
 					.enter().append("line")
+						.attr("class", "y-tick")
 						.attr("x1", 0)
 						.attr("x2", chart_width)
+						.attr("y1", 0)
+						.attr("y2", 0)
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+				chart.selectAll(".y-tick").data(y_scale.ticks(10))
+					.transition()
+					.duration(2000)
 						.attr("y1", y_scale)
 						.attr("y2", y_scale)
 						.attr("opacity", ".5")
-						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				chart.selectAll(".y-tick").data(y_scale.ticks(10)).exit().remove()
+
 
 				d3.select("."+data_types[i]+"_labels").selectAll(".y-scale-label").remove()
 				d3.select("."+data_types[i]+"_labels").selectAll("labels-holder").remove()
