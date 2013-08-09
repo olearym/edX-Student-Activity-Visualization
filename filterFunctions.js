@@ -1,4 +1,6 @@
 var maxGrade=100
+
+//sortByGrade takes a list of edX schema tracking objects, lower grade, and an upper grade. It returns the objects belongign to a student with a grade above the lower grade and below the upper grade.
 var sortByGrade = function(list,lower, upper){
     var filteredList=[]
     if (lower == ""){
@@ -20,6 +22,7 @@ var sortByGrade = function(list,lower, upper){
     return filteredList
 }
 
+//sortByType is currently unused. It takes a list of edX schema tracking object and a list of edX schema event_types, and returns a list of objects with an event_type that is in types.
 var sortByType=function(list, types){
     var newList=[]
     
@@ -45,6 +48,7 @@ var sortByType=function(list, types){
     
 }
 
+//weeklyCompile takes a list of edX schema tracking items, and compiles them to show trends over and 'average week'. It currently sets every Moday to the first Monday in September, every Tuesday to the first Tuesday, etc. This will be changed.
 var weeklyCompile = function(list){
     var copyList = $.extend(true, [], list)
     for (var i=0;i<copyList.length;i++){
@@ -76,6 +80,7 @@ var weeklyCompile = function(list){
     
 }
 
+//obj_date_sort is a function to be used to sort lists of objects containing 'time' in ascending date order. Use this as a parameter for  .sort()
 var obj_date_sort=function (obj1, obj2){
     var date1= new Date(obj1['time'])
     var date2= new Date(obj2['time'])
@@ -84,6 +89,7 @@ var obj_date_sort=function (obj1, obj2){
     return 0;
 }
 
+//getTimeRange takes a list of edX schema tracking objects, a start date object, and a end date object. It returns a list of all objects falling after the start date and before the end date.
 var getTimeRange=function(list,start,end){
     var newList=[]
     var startMS=start.valueOf()
