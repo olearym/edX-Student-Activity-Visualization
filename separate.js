@@ -194,7 +194,8 @@ var separate_charts = (function() {
 			    .call(xTicks);
 
 			// create week landmark lines
-			chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+			if (data.problem_data.length > 200) {
+				chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
 				.enter().append("line")
 					.attr("x1", x_label_scale)
 					.attr("x2", x_label_scale)
@@ -208,6 +209,7 @@ var separate_charts = (function() {
 					.attr("y", -3)
 					.attr("opacity", ".5")
 					.text(function(d, i) {return "Week " + (i+1);});
+			}
 
 			// create landmark line for each assignment
 			for (date in due_dates) {
@@ -215,7 +217,6 @@ var separate_charts = (function() {
 				data_process.round_date(first_day)
 				first_day.setHours(0)
 				var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000));
-
 				var dueTick = chart.append("g")
 								.attr("class", "date-tick")
 								.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(-4)+')');
@@ -312,7 +313,7 @@ var separate_charts = (function() {
 		}
 
 	}
-	// called when data is filtered by grade
+	// called when data is filtered
 	var redraw = function(data) {
 
 		for (var i = 0; i < data_types.length; i++) {
@@ -438,6 +439,30 @@ var separate_charts = (function() {
 				    .attr('opacity', '.3')
 				    .call(xTicks);
 
+				chart.selectAll(".date-tick").remove()
+				for (date in due_dates) {
+					var first_day = new Date(data.first_event.getTime())
+					data_process.round_date(first_day)
+					first_day.setHours(0)
+					var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000));
+					var dueTick = chart.append("g")
+									.attr("class", "date-tick")
+									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(16)+')');
+					var dueMark = chart.append("g")
+									.attr("class", "date-tick")
+									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+22)+')');
+					dueMark.append("line")
+						.attr("y1", -10)
+						.attr("y2", -chart_height - 5)
+						.attr("opacity", ".8");
+
+					dueTick.append('text')
+						.attr("text-anchor", "middle")
+						.attr('opacity', '.5')
+						.text(date);
+				}
+
+
 				// resize bars based on filtered data
 				if (data_types[i] == "problem_data") {
 					var layer_group = chart.selectAll(".layer").data([separate_data])
@@ -449,6 +474,9 @@ var separate_charts = (function() {
 									.attr("y", function(d) {return y_scale(d.y)})
 									.attr("width", x_scale.rangeBand())
 									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
+
+					layer_group.selectAll("rect").data(function(d) {return d;})
+						.exit().remove();
 				}
 				else if (data_types[i] == "video_data") {
 					var layer_group = chart.selectAll(".layer").data(separate_data)
