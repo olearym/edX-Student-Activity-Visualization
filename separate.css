@@ -18,12 +18,10 @@
 }
 
 .chart-holder {
-	width: 80%;
-	overflow-x: auto;
-	overflow-y: hidden;
-	position: relative;
-	top: -200px;
-	right: -8%;
+/*	width: 80%;*/
+	/*position: relative;*/
+/*	top: -200px;*/
+/*	right: -8%;*/
 }
 .chart-div {
 	width: 100%;
@@ -34,7 +32,7 @@
 
 .legend {
 	position: relative;
-	top: -600px;
+	top: -400px;
 	float: right;
         
 }
@@ -75,16 +73,25 @@
 
 .video_data_labels {
 	position: relative;
-	top: -200px;
+	top: -410px;
 }
 
 .video_data_chart {
 	position: relative;
-	top: -400px
+/*	top: -400px*/
 }
 
 .video_data_chart line{
 	position: relative;
-	top: 200px;
+/*	top: 400px;*/
+}
+
+.all-charts-holder {
+	width: 80%;
+	right: -8%;
+	position: relative;
+	top: -200px;
+	overflow-x: auto;
+	overflow-y: hidden;
 }
             

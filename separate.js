@@ -101,6 +101,7 @@ var separate_charts = (function() {
 				
 			}
 
+
 			// create a container for y-axis markings. This is recreated each time the graph is redrawn.
 			var constant_labels = d3.select(".chart-div")
 						.append("svg")
@@ -111,10 +112,13 @@ var separate_charts = (function() {
 						.append("g")
 							.attr("class", "labels-holder")
 							.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			if (i == 0) {
+				$(".chart-div").append($("<div class='all-charts-holder'></div>"))
+			}
 
 			// create container for the chart, giving it a class with the data type name so it can
 			// be selected easily
-			$(".chart-div").append($("<div class='chart-holder "+data_types[i]+"_chart'></div>"));
+			$(".all-charts-holder").append($("<div class='chart-holder "+data_types[i]+"_chart'></div>"));
 
 			// counters svg annoyingness when making new chart - moves new labels to the front and deletes old
 			// labels if somehow previously existing labels weren't deleted.
@@ -444,13 +448,17 @@ var separate_charts = (function() {
 					var first_day = new Date(data.first_event.getTime())
 					data_process.round_date(first_day)
 					first_day.setHours(0)
-					var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000));
+					if (data.problem_data.length > 200) {
+						var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 5;
+					} else {
+						var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 3;
+					}
 					var dueTick = chart.append("g")
 									.attr("class", "date-tick")
 									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(16)+')');
 					var dueMark = chart.append("g")
 									.attr("class", "date-tick")
-									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+22)+')');
+									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+14)+')');
 					dueMark.append("line")
 						.attr("y1", -10)
 						.attr("y2", -chart_height - 5)
