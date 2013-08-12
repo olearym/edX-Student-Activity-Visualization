@@ -54,6 +54,7 @@ var weeklyCompile = function(list){
     for (var i=0;i<copyList.length;i++){
         var day = (new Date(copyList[i]['time'])).getDay()
         var time =copyList[i]['time'].split('T')[1]
+
         if (day==0){
             copyList[i]['time']= '2013-09-01T'+time 
         }
