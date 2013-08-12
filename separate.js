@@ -1,3 +1,8 @@
+// to-do: change date labels on average week view
+// change names in dropdown
+// incorporate crossfilter, add by video filter
+// add label to top of chart
+
 
 // object with assignment names as keys and Date objects as values, represents when assignments
 // are due in the class. 
@@ -40,7 +45,9 @@ var separate_charts = (function() {
 	// corresponds to data returned from format_separated_data
 	var data_types = ["problem_data", "video_data"]
 
-	var setup = function(data) {
+	// data is the data object returned by a data_process function, average is a boolean value representing
+	// whether or not the data being charted is averaged over multiple weeks or not
+	var setup = function(data, average) {
 
 		// set chart width depending on how long of a data set we are charting
 		if (data.problem_data.length < 200) {
@@ -162,13 +169,23 @@ var separate_charts = (function() {
 					.text(String);
 
 			// make day labels for x axis
-			var xAxis = d3.svg.axis()
-			    .scale(x_label_scale)
-			    .orient('bottom')
-			    .ticks(d3.time.days, 1)
-			    .tickFormat(d3.time.format('%a %d'))
-			    .tickSize(0)
-			    .tickPadding(50);
+			if (!average) {
+				var xAxis = d3.svg.axis()
+				    .scale(x_label_scale)
+				    .orient('bottom')
+				    .ticks(d3.time.days, 1)
+				    .tickFormat(d3.time.format('%a %d'))
+				    .tickSize(0)
+				    .tickPadding(50);
+			} else {
+				var xAxis = d3.svg.axis()
+				    .scale(x_label_scale)
+				    .orient('bottom')
+				    .ticks(d3.time.days, 1)
+				    .tickFormat(d3.time.format('%A'))
+				    .tickSize(0)
+				    .tickPadding(50);
+			}
 			
 			var xTicks = d3.svg.axis()
 			    .scale(x_label_scale)
@@ -318,7 +335,7 @@ var separate_charts = (function() {
 
 	}
 	// called when data is filtered
-	var redraw = function(data) {
+	var redraw = function(data, average) {
 
 		for (var i = 0; i < data_types.length; i++) {
 			
@@ -416,13 +433,23 @@ var separate_charts = (function() {
 				chart.selectAll('.x-axis').remove();
 				chart.selectAll('.x-ticks').remove();
 
-				var xAxis = d3.svg.axis()
-				    .scale(x_label_scale)
-				    .orient('bottom')
-				    .ticks(d3.time.days, 1)
-				    .tickFormat(d3.time.format('%a %d'))
-				    .tickSize(0)
-				    .tickPadding(50);
+				if (!average) {
+					var xAxis = d3.svg.axis()
+					    .scale(x_label_scale)
+					    .orient('bottom')
+					    .ticks(d3.time.days, 1)
+					    .tickFormat(d3.time.format('%a %d'))
+					    .tickSize(0)
+					    .tickPadding(50);
+				} else {
+					var xAxis = d3.svg.axis()
+					    .scale(x_label_scale)
+					    .orient('bottom')
+					    .ticks(d3.time.days, 1)
+					    .tickFormat(d3.time.format('%A'))
+					    .tickSize(0)
+					    .tickPadding(50);
+				}
 				
 				var xTicks = d3.svg.axis()
 				    .scale(x_label_scale)
@@ -460,8 +487,8 @@ var separate_charts = (function() {
 									.attr("class", "date-tick")
 									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+14)+')');
 					dueMark.append("line")
-						.attr("y1", -10)
-						.attr("y2", -chart_height - 5)
+						.attr("y1", 0)
+						.attr("y2", -chart_height + 5)
 						.attr("opacity", ".8");
 
 					dueTick.append('text')
@@ -474,6 +501,12 @@ var separate_charts = (function() {
 				// resize bars based on filtered data
 				if (data_types[i] == "problem_data") {
 					var layer_group = chart.selectAll(".layer").data([separate_data])
+
+					layer_group.selectAll("rect").data(function(d) {return d;})
+						.enter().append("rect")
+							.attr("x", function(d, i) { return x_scale(i) })
+							.attr("y", function(d) {return y_scale(d.y0 + d.y)})
+							.attr("width", x_scale.rangeBand())
 
 					var rects = layer_group.selectAll("rect").data(function(d) {return d;})
 								.transition()
@@ -489,6 +522,12 @@ var separate_charts = (function() {
 				else if (data_types[i] == "video_data") {
 					var layer_group = chart.selectAll(".layer").data(separate_data)
 
+					layer_group.selectAll("rect").data(function(d) {return d;})
+						.enter().append("rect")
+							.attr("x", function(d, i) { return x_scale(i) })
+							.attr("y", function(d) {return y_scale(d.y0 + d.y)})
+							.attr("width", x_scale.rangeBand())
+
 					var rects = layer_group.selectAll("rect").data(function(d) { return d; })
 								.transition()
 								.duration(2000)
@@ -496,6 +535,8 @@ var separate_charts = (function() {
 									.attr("y", function(d) {return y_scale(d.y0 + d.y)})
 									.attr("width", x_scale.rangeBand())
 									.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
+					layer_group.selectAll("rect").data(function(d) {return d;})
+						.exit().remove();
 
 				}
 			}
