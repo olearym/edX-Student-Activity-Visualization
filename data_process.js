@@ -288,7 +288,7 @@ var data_process = (function() {
 					}
 
 					var play_event_hour = new Date(play_event.time).getHours()
-					
+
 					if (play_event_hour == event_hour) {
 						filled_events_by_hour[event_day][event_hour].push(minutes)
 					}
@@ -330,11 +330,32 @@ var data_process = (function() {
 			return out;
 		}
 
+		var averaged_data = function(formatted_data, weeks) {
+			var problem_data = formatted_data.problem_data
+			var video_data = formatted_data.video_data
+
+			for (var i = 0; i < problem_data.length; i++) {
+				problem_data[i].y = problem_data[i].y/weeks
+			}
+
+			for (var i = 0; i < video_data.stacked_data.length; i++) {
+				for (var j = 0; j < video_data.stacked_data[i].length; j++){
+					video_data.stacked_data[i][j].y = video_data.stacked_data[i][j].y/weeks
+				}
+			}
+
+			return {"problem_data": problem_data, 
+					"video_data": video_data, 
+					"first_event": formatted_data.first_event,
+					"last_event": formatted_data.last_event}
+		}
+
 		exports.video_minutes = video_minutes;
 		exports.process_videos = process_videos;
 		exports.round_date = round_date;
 		exports.process_event_types = process_event_types;
 		exports.format_events = format_events;
+		exports.averaged_data = averaged_data;
 
 		return exports;
 	
