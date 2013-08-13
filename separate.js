@@ -21,7 +21,7 @@ var format_separated_data = function(data) {
 	
 	var first_event = data_process.format_events([problem_events, video_events]).first_event;
 	var last_event = data_process.format_events([problem_events, video_events]).last_event;
-
+	console.log("Old data format:", problem_data, video_data, first_event, last_event)
 	return {"problem_data": problem_data,
 			"video_data": video_data,
 			"first_event": first_event,
@@ -551,6 +551,10 @@ var separate_charts = (function() {
 })();
 
 var data = events_with_URL
+var cf_data = crossfilter(data)
+var by_grade = cf_data.dimension(function(d) {return d.grade;});
+var by_date = cf_data.dimension(function(d) {return new Date(d.time).valueOf();});
+
 $(document).ready(function() {
 	$(".chart-div").each(function() {
 		separate_charts.setup(format_separated_data(data));
