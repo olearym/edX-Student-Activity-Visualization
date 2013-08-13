@@ -51,7 +51,7 @@ var separate_charts = (function() {
 
 		// set chart width depending on how long of a data set we are charting
 		if (data.problem_data.length < 200) {
-			outer_width = 1200;
+			outer_width = 900;
 			chart_width = outer_width - margin.left - margin.right;
 		}
 

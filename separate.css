@@ -24,10 +24,12 @@
 /*	right: -8%;*/
 }
 .chart-div {
-	width: 100%;
+	width: 80%;
 	border: 1px solid gray;
-	height: 80%;
+	height: 500px;
 	overflow: hidden;
+	position: relative;
+	float: left;
 }
 
 .legend {
@@ -37,7 +39,7 @@
         
 }
 #grade-slider{
-    width:25%;
+    width:50%;
     position:relative;
     left:109px;
     top:5px;
@@ -57,7 +59,7 @@
 }
 #amount{
     position:relative;
-    left:225px;
+    left:63%;
     top:5px;
     
 }
@@ -93,5 +95,12 @@
 	top: -200px;
 	overflow-x: auto;
 	overflow-y: hidden;
+}
+
+.filter-div {
+	position: relative;
+	float: left;
+	width: 15%;
+	padding: 10px;
 }
             
