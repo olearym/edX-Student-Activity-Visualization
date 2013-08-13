@@ -256,6 +256,7 @@ var data_process = (function() {
 
 		var events_by_hour = make_events_by_hour(first_event, last_event);
 		var stacked_data = []
+		var count = 0
 
 		for (var index = 0; index < video_events.length; index++) {
 			var filled_events_by_hour = $.extend(true, {}, events_by_hour)
@@ -298,15 +299,18 @@ var data_process = (function() {
 
 						var before_minutes = (rounded_hour.getTime() - new Date(play_event.time).getTime())/(60000)
 						var after_minutes = (new Date(event.time).getTime() - rounded_hour.getTime())/(60000)
-
-						var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
-						var play_event_date = new Date(play_event.time);
-						var play_event_day = (play_event_date.getMonth() + 1) +"/"+event_date.getDate();
-						filled_events_by_hour[event_day][event_hour].push(before_minutes)
-						if (filled_events_by_hour[play_event_day] !== undefined) {
-							filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
+						if (before_minutes + after_minutes > 30) {
+							count += 1
 						} else {
-							console.log(play_event_day, play_event_date, event_date)
+							var event_day = (event_date.getMonth() + 1) +"/"+event_date.getDate();
+							var play_event_date = new Date(play_event.time);
+							var play_event_day = (play_event_date.getMonth() + 1) +"/"+event_date.getDate();
+							filled_events_by_hour[event_day][event_hour].push(before_minutes)
+							if (filled_events_by_hour[play_event_day] !== undefined) {
+								filled_events_by_hour[play_event_day][play_event_hour].push(after_minutes)
+							} else {
+								console.log(play_event_day, play_event_date, event_date)
+							}
 						}
 					}
 				}
@@ -323,12 +327,21 @@ var data_process = (function() {
 				}
 			stacked_data.push(num_minutes)
 			}
+			console.log(count+" events not included")
 			out.stacked_data = stacked_data;
 			out.first_event = first_event;
 			out.last_event = last_event;
 			out.data = stacked_data
 			return out;
 		}
+
+		// var average_week = function(data) {
+		// 	var weeks = Math.ceil(data.stacked_data[0]/(168))
+		// 	for (var i = 0; i < weeks; i++) {
+		// 		for(var j = i*168; j < (i+1)*168; j++)
+
+		// 	}
+		// }
 
 		var averaged_data = function(formatted_data, weeks) {
 			var problem_data = formatted_data.problem_data
