@@ -56,18 +56,12 @@ var organize = function() {
 			if (play.getHours() == pause.getHours()) {
 				video_data[unpaused[user][1]]["minutes"] = 0
 				video_data[i]["minutes"] = minutes
-				if (minutes == undefined) {
-					console.log(play, pause)
-				}
 			} else {
 				var hour = new Date(video_data[i].time)
 				round_date(hour)
 
 				var play_minutes = (hour.getTime() - play.getTime())/60000
 				var pause_minutes = (pause.getTime() - hour.getTime())/60000
-				if (play_minutes == undefined || pause_minutes == undefined) {
-					console.log(play, pause, hour)
-				}
 
 				video_data[unpaused[user][1]]["minutes"] = play_minutes
 				video_data[i]["minutes"] = pause_minutes
@@ -90,7 +84,6 @@ var organize = function() {
 }
 
 var nest_days = function(data) {
-	console.log(data)
 	var nest = d3.nest().key(function(d) {
 		var event_date = new Date(d.time);
 		return (event_date.getMonth() + 1) +"/"+event_date.getDate();
@@ -141,12 +134,83 @@ var count_minutes = function(days) {
 	return out
 }
 
-var new_data_format = function(all, time, grade) {
+var initial_format = function(all) {
 	var video_data = count_minutes(nest_days(all.video_data))
 	var problem_data = count_events(nest_days(all.problem_data))
+	var video_events = crossfilter(all.video_data)
+	var problem_events = crossfilter(all.problem_data)
 	var first_event = new Date(all.first_event.time)
 	var last_event = new Date(all.last_event.time)
 
+	return {"video_data": video_data,
+			"problem_data": problem_data,
+			"first_event": first_event, 
+			"last_event": last_event,
+			"video_events": video_events,
+			"problem_events": problem_events}
+}
+
+var filter_format = function(grade_range, time_range) {
+
+	if (time_range != "all") {
+		p_date.filterRange(time_range)
+		v_date.filterRange(time_range)
+		var first_event = time_range[0]
+		var last_event = time_range[1]
+	} else {
+		p_date.filterAll()
+		v_date.filterAll()
+		p_grade.filterAll()
+		v_grade.filterAll()
+		var int_problem_data = p_date.top(Infinity)
+		var int_video_data = v_date.top(Infinity)
+		int_problem_data.sort(function(a,b){
+		  a = new Date(a.time);
+		  b = new Date(b.time);
+		  return a<b?-1:a>b?1:0;
+		});
+		int_video_data.sort(function(a,b){
+		  a = new Date(a.time);
+		  b = new Date(b.time);
+		  return a<b?-1:a>b?1:0;
+		});
+		var first_event = new Date(int_problem_data[0].time)
+		var last_event = new Date(int_problem_data[int_problem_data.length - 1].time)
+		if (first_event.getTime() > new Date(int_video_data[0].time).getTime()) {
+			first_event = new Date(int_video_data[0].time)
+		}
+		if (last_event.getTime() < new Date(int_video_data[int_video_data.length - 1].time).getTime()) {
+			last_event = new Date(int_video_data[int_video_data.length - 1].time)
+		}
+	}
+	p_grade.filterRange(grade_range)
+	v_grade.filterRange(grade_range)
+	var problem_data = p_grade.top(Infinity)
+	var video_data = v_grade.top(Infinity)
+	problem_data.sort(function(a,b){
+		  a = new Date(a.time);
+		  b = new Date(b.time);
+		  return a<b?-1:a>b?1:0;
+		});
+	video_data.sort(function(a,b){
+		  a = new Date(a.time);
+		  b = new Date(b.time);
+		  return a<b?-1:a>b?1:0;
+		});
+	problem_data = count_events(nest_days(problem_data))
+	video_data = count_minutes(nest_days(video_data))
+	if (problem_data.length !== video_data.length) {
+		var small = problem_data
+		var big = video_data
+		if (problem_data.length > video_data.length) {
+			small = video_data
+			big = problem_data
+		}
+		var difference = big.length - small.length
+		for (var i = 0; i < difference; i++) {
+			small.splice(0,0, {"y": 0})
+		}
+	}
 	return {"video_data": video_data,
 			"problem_data": problem_data,
 			"first_event": first_event, 

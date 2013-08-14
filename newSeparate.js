@@ -222,14 +222,23 @@ var separate_charts = (function() {
 			}	
 			
 			// create y-axis label and bars for problem data chart
-				
-				constant_labels.append("text")
+				if (data_types[i] == "problem_data") {
+					constant_labels.append("text")
 			        .attr("transform", "rotate(-90)")
 			        .attr("y", -10)
 			        .attr("x", 0 - (outer_height / 2) + 15)
 			        .attr("dy", "1em")
 			        .style("text-anchor", "middle")
 			        .text("Problem Attempts");
+				} else {
+					constant_labels.append("text")
+			        .attr("transform", "rotate(-90)")
+			        .attr("y", -10)
+			        .attr("x", 0 - (outer_height / 2) + 15)
+			        .attr("dy", "1em")
+			        .style("text-anchor", "middle")
+			        .text("Minutes of Video Watched");
+				}
 
 				var layer_group = chart.selectAll(".layer").data([separate_data])
 								.enter().append('g')
@@ -243,6 +252,7 @@ var separate_charts = (function() {
 									.attr("width", x_scale.rangeBand())
 									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})			
 		}
+		return {"video_events": data.video_events, "problem_events": data.problem_events}
 
 	}
 	// called when data is filtered
@@ -252,7 +262,7 @@ var separate_charts = (function() {
 			
 			// data.first_event is undefined if the filtered data set is empty.
 			// sets all bars to zero but doesn't change any labels.
-			if (data.first_event == undefined) {
+			if (data.video_data.length == 0 && data.problem_data.length == 0) {
 
 				var layer_groups = d3.select("."+data_types[i]+"_chart").select('.chart').selectAll(".layer")
 			
@@ -362,7 +372,7 @@ var separate_charts = (function() {
 				chart.selectAll(".date-tick").remove()
 				for (date in due_dates) {
 					var first_day = new Date(data.first_event.getTime())
-					data_process.round_date(first_day)
+					round_date(first_day)
 					first_day.setHours(0)
 					if (data.problem_data.length > 200) {
 						var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 5;
@@ -418,10 +428,19 @@ var separate_charts = (function() {
 })();
 
 var all = organize()
+var separated_data
+var p_grade
+var p_date
+var v_grade
+var v_date
 
 $(document).ready(function() {
 	$(".chart-div").each(function() {
-		separate_charts.setup(new_data_format(all, undefined, undefined));
+		separated_data = separate_charts.setup(initial_format(all));
+		p_grade = separated_data.problem_events.dimension(function(d) {return d.grade;})
+		p_date = separated_data.problem_events.dimension(function(d) {return new Date(d.time).valueOf();});
+		v_grade = separated_data.video_events.dimension(function(d) {return d.grade;})
+		v_date = separated_data.video_events.dimension(function(d) {return new Date(d.time).valueOf();});
 	})
 })
 
