@@ -217,3 +217,57 @@ var filter_format = function(grade_range, time_range) {
 			"last_event": last_event}
 }
 
+var average = function(grade_range) {
+	p_grade.filterAll()
+	v_grade.filterAll()
+	p_grade.filterRange(grade_range)
+	v_grade.filterRange(grade_range)
+	var problem_data = p_grade.top(Infinity)
+	var video_data = v_grade.top(Infinity)
+	problem_data.sort(function(a,b){
+		  a = new Date(a.time);
+		  b = new Date(b.time);
+		  return a<b?-1:a>b?1:0;
+		});
+	video_data.sort(function(a,b){
+		  a = new Date(a.time);
+		  b = new Date(b.time);
+		  return a<b?-1:a>b?1:0;
+		});
+	problem_data = count_events(nest_days(problem_data))
+	video_data = count_minutes(nest_days(video_data))
+	if (problem_data.length !== video_data.length) {
+		var small = problem_data
+		var big = video_data
+		if (problem_data.length > video_data.length) {
+			small = video_data
+			big = problem_data
+		}
+		var difference = big.length - small.length
+		for (var i = 0; i < difference; i++) {
+			small.splice(0,0, {"y": 0})
+		}
+	}
+	var weeks = Math.ceil(problem_data.length/(168))
+	if (problem_data.length !== 0 && video_data.length !== 0) {
+		for (var i = 0; i < 168; i++) {
+			for (var j = 0; j < weeks; j++) {
+				if (problem_data[j*i]["y"] !== undefined) {
+					problem_data[i]["y"] = problem_data[j*i]["y"] + problem_data[i]["y"]
+				}
+				if (video_data[j*i]["y"] !== undefined) {
+					video_data[i]["y"] = video_data[j*i]["y"] + video_data[i]["y"]
+				}
+			}
+			video_data[i]["y"] = video_data[i]["y"]/weeks
+			problem_data[i]["y"] = problem_data[i]["y"]/weeks
+		}
+	}
+	video_data = video_data.slice(0, 168)
+	problem_data = problem_data.slice(0, 168)
+	return {"video_data": video_data,
+			"problem_data": problem_data,
+			"first_event": new Date('2013-09-01T00:00:00Z'), 
+			"last_event": new Date('2013-09-08T04:00:00Z')}
+}
+

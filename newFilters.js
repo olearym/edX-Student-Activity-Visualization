@@ -45,7 +45,7 @@ var applyFilters=function(){
         currentView='compWeek'
         
         if (timeFilter == 'compWeek'){
-            filtered_data=weeklyCompile(filtered_data)
+            filtered_data = average([lower, upper])
         }
         else{
             filtered_data = filter_format([lower, upper], [start, end])
@@ -59,14 +59,14 @@ var applyFilters=function(){
      
     if (currentView==oldView){
         if (timeFilter == 'compWeek') {
-            separate_charts.redraw(filtered_data)
+            separate_charts.redraw(filtered_data, true)
         } else {
             separate_charts.redraw(filtered_data)
         }
     }
     else{
         if (timeFilter == 'compWeek') {
-            separate_charts.setup(filtered_data)
+            separate_charts.setup(filtered_data, true)
         } else {
             separate_charts.setup(filtered_data)
         }
