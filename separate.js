@@ -347,7 +347,7 @@ var separate_charts = (function() {
 			
 				layer_groups.selectAll("rect")
 					.transition()
-					.duration(2000)
+					.duration(1000)
 					.attr("height", 0)
 					.attr("y", chart_height)
 
@@ -406,7 +406,7 @@ var separate_charts = (function() {
 
 				chart.selectAll(".y-tick").data(y_scale.ticks(10))
 					.transition()
-					.duration(2000)
+					.duration(1000)
 						.attr("y1", y_scale)
 						.attr("y2", y_scale)
 						.attr("opacity", ".5")
@@ -510,7 +510,7 @@ var separate_charts = (function() {
 
 					var rects = layer_group.selectAll("rect").data(function(d) {return d;})
 								.transition()
-								.duration(2000)
+								.duration(1000)
 							 		.attr("x", function(d, i) { return x_scale(i) })
 									.attr("y", function(d) {return y_scale(d.y)})
 									.attr("width", x_scale.rangeBand())
@@ -530,7 +530,7 @@ var separate_charts = (function() {
 
 					var rects = layer_group.selectAll("rect").data(function(d) { return d; })
 								.transition()
-								.duration(2000)
+								.duration(1000)
 									.attr("x", function(d, i) { return x_scale(i) })
 									.attr("y", function(d) {return y_scale(d.y0 + d.y)})
 									.attr("width", x_scale.rangeBand())

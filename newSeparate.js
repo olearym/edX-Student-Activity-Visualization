@@ -44,7 +44,7 @@ var separate_charts = (function() {
 
 		// set chart width depending on how long of a data set we are charting
 		if (data.problem_data.length < 200) {
-			outer_width = 900;
+			outer_width = 800;
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
@@ -56,6 +56,7 @@ var separate_charts = (function() {
 		// because setup is called to regraph data sometimes, remove any existing chart
 		$('.chart-div').children().remove();
 		$('.due-dates').remove();
+		$('.chart-div').append("<div class='title'><u>Student Activity by Resource</u></div>")
 
 		// loop through data_types - created this way to support additional data types
 		for (var i = 0; i < data_types.length; i++) {

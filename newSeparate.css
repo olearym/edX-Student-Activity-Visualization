@@ -1,0 +1,111 @@
+.chart {
+	padding-bottom: 10px;
+}
+
+.chart rect {
+	stroke: white;
+}
+
+.chart text {
+	font: 10px sans-serif;
+}
+
+.chart .bar-label {
+	fill: white;
+}
+.chart line {
+	stroke: #ccc;
+}
+
+.chart-holder {
+/*	width: 80%;*/
+	/*position: relative;*/
+/*	top: -200px;*/
+/*	right: -8%;*/
+}
+.chart-div {
+	width: 80%;
+	border: 1px solid gray;
+	height: 500px;
+	overflow: hidden;
+	position: relative;
+	float: left;
+}
+
+.legend {
+	position: relative;
+	top: -400px;
+	float: right;
+        
+}
+#grade-slider{
+    width:50%;
+    position:relative;
+    left:109px;
+    top:5px;
+    font-family:serif;
+    font-size:none;
+    
+}
+
+.grade-title{
+    position:relative;
+    left:-110px;
+    top:-4px;
+    font-weight:normal;
+    font-size:12pt;
+    color:#000000;
+    
+}
+#amount{
+    position:relative;
+    left:75%;
+    top:5px;
+    
+}
+
+.time{
+    font-size:12pt;
+}
+
+.problem_data_chart {
+	position: relative;
+
+}
+
+.video_data_labels {
+	position: relative;
+	top: -410px;
+}
+
+.video_data_chart {
+	position: relative;
+/*	top: -400px*/
+}
+
+.video_data_chart line{
+	position: relative;
+/*	top: 400px;*/
+}
+
+.all-charts-holder {
+	width: 90%;
+	right: -8%;
+	position: relative;
+	top: -200px;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.filter-div {
+	position: relative;
+	float: left;
+	width: 15%;
+	padding: 10px;
+}
+
+.title {
+	text-align: center;
+	font-size: 20px;
+}
+            
