@@ -15,7 +15,6 @@ var format_separated_data = function(data) {
 	
 	var first_event = data_process.format_events([problem_events, video_events]).first_event;
 	var last_event = data_process.format_events([problem_events, video_events]).last_event;
-	console.log("Old data format:", problem_data, video_data, first_event, last_event)
 	return {"problem_data": problem_data,
 			"video_data": video_data,
 			"first_event": first_event,
@@ -268,7 +267,7 @@ var separate_charts = (function() {
 			
 				layer_groups.selectAll("rect")
 					.transition()
-					.duration(2000)
+					.duration(1000)
 					.attr("height", 0)
 					.attr("y", chart_height)
 
@@ -305,7 +304,7 @@ var separate_charts = (function() {
 
 				chart.selectAll(".y-tick").data(y_scale.ticks(10))
 					.transition()
-					.duration(2000)
+					.duration(1000)
 						.attr("y1", y_scale)
 						.attr("y2", y_scale)
 						.attr("opacity", ".5")
@@ -408,7 +407,7 @@ var separate_charts = (function() {
 
 				var rects = layer_group.selectAll("rect").data(function(d) {return d;})
 							.transition()
-							.duration(2000)
+							.duration(1000)
 						 		.attr("x", function(d, i) { return x_scale(i) })
 								.attr("y", function(d) {return y_scale(d.y)})
 								.attr("width", x_scale.rangeBand())

@@ -220,6 +220,8 @@ var filter_format = function(grade_range, time_range) {
 var average = function(grade_range) {
 	p_grade.filterAll()
 	v_grade.filterAll()
+	p_date.filterAll()
+	v_date.filterAll()
 	p_grade.filterRange(grade_range)
 	v_grade.filterRange(grade_range)
 	var problem_data = p_grade.top(Infinity)
@@ -267,7 +269,7 @@ var average = function(grade_range) {
 	problem_data = problem_data.slice(0, 168)
 	return {"video_data": video_data,
 			"problem_data": problem_data,
-			"first_event": new Date('2013-09-01T00:00:00Z'), 
+			"first_event": new Date('2013-09-02T00:00:00Z'), 
 			"last_event": new Date('2013-09-08T04:00:00Z')}
 }
 
