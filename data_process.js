@@ -252,6 +252,9 @@ var filter_format = function(grade_range, time_range) {
 			"last_event": last_event}
 }
 
+// works like filter_format, but the two data sets it returns are only 168 hours long.
+// the values for each of those hours is the average value of that hour over all the weeks in 
+// the data set. first_event and last_event are set as an arbitrary Sunday and Saturday at midnight
 var average = function(grade_range) {
 	p_grade.filterAll()
 	v_grade.filterAll()
@@ -304,7 +307,7 @@ var average = function(grade_range) {
 	problem_data = problem_data.slice(0, 168)
 	return {"video_data": video_data,
 			"problem_data": problem_data,
-			"first_event": new Date('2013-09-02T00:00:00Z'), 
+			"first_event": new Date('2013-09-01T04:00:00Z'), 
 			"last_event": new Date('2013-09-08T04:00:00Z')}
 }
 
