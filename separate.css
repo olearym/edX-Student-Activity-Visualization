@@ -3,7 +3,7 @@
 }
 
 .chart rect {
-	stroke: white;
+	stroke: lightgrey;
 }
 
 .chart text {
@@ -59,7 +59,7 @@
 }
 #amount{
     position:relative;
-    left:63%;
+    left:75%;
     top:5px;
     
 }
@@ -89,7 +89,7 @@
 }
 
 .all-charts-holder {
-	width: 80%;
+	width: 90%;
 	right: -8%;
 	position: relative;
 	top: -200px;
@@ -102,5 +102,16 @@
 	float: left;
 	width: 15%;
 	padding: 10px;
+}
+
+.title {
+	text-align: center;
+	font-size: 20px;
+}
+
+.landmark-alert {
+	background-color: #FF9999;
+	color: #A30000;
+	border-radius: 5px;
 }
             

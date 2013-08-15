@@ -1,32 +1,6 @@
-// to-do: change date labels on average week view
-// change names in dropdown
-// incorporate crossfilter, add by video filter
-// add label to top of chart
-
-
 // object with assignment names as keys and Date objects as values, represents when assignments
 // are due in the class. 
 var due_dates = {"PSet 1": new Date(2013, 8, 10, 21, 0, 0, 0), "PSet 2": new Date(2013, 8, 20, 21, 0, 0, 0), "Quiz 1":new Date(2013, 8, 25, 18, 0, 0, 0)}
-
-// takes a raw data variable and applies several functions from data_process in order to return
-// an object with all of the information needed to chart the data.
-// see data_process.js for function explanations
-var format_separated_data = function(data) {
-	var video_events = data_process.process_event_types(data).video_events;
-	var problem_events = data_process.process_event_types(data).problem_events;
-
-	var processed_data = data_process.format_events([problem_events, video_events]).stacked_data;
-	var problem_data = processed_data[0];
-	var video_data = data_process.video_minutes(problem_events, data_process.process_videos(video_events));
-	
-	var first_event = data_process.format_events([problem_events, video_events]).first_event;
-	var last_event = data_process.format_events([problem_events, video_events]).last_event;
-	console.log("Old data format:", problem_data, video_data, first_event, last_event)
-	return {"problem_data": problem_data,
-			"video_data": video_data,
-			"first_event": first_event,
-			"last_event": last_event};
-}
 
 // contains function to create separate charts for video and problem events
 var separate_charts = (function() {
@@ -48,66 +22,42 @@ var separate_charts = (function() {
 	// data is the data object returned by a data_process function, average is a boolean value representing
 	// whether or not the data being charted is averaged over multiple weeks or not
 	var setup = function(data, average) {
-
-		// set chart width depending on how long of a data set we are charting
+		currentData = data
+		// set chart width depending on how long of a data set we are charting and how large the user's browser window is
+		$(".chart-div").append($("<div class='all-charts-holder'></div>"))
 		if (data.problem_data.length < 200) {
-			outer_width = 900;
+			$('.zoom').val('fit')
+			outer_width = parseInt($('.all-charts-holder').css("width").substring(-2));
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
 		if(data.problem_data.length > 200) {
-			outer_width = 3000;
+			$('.zoom').val('fit')
+			outer_width = parseInt($('.all-charts-holder').css("width").substring(-2));
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
 		// because setup is called to regraph data sometimes, remove any existing chart
 		$('.chart-div').children().remove();
 		$('.due-dates').remove();
+		$('.chart-div').append("<div class='title'><u>Student Activity by Resource</u></div>")
 
 		// loop through data_types - created this way to support additional data types
 		for (var i = 0; i < data_types.length; i++) {
-
-			// problem data is not a stacked chart
-			if (data_types[i] == "problem_data") {
 			
-				var separate_data = data[data_types[i]]
+			var separate_data = data[data_types[i]]
 
-				var y_max = d3.max(separate_data, function(d) {return d.y;})
+			var y_max = d3.max(separate_data, function(d) {return d.y;})
 
-				var x_scale = d3.scale.ordinal()
-								.domain(d3.range(separate_data.length)).rangeBands([0, chart_width]);
-				var x_label_scale = d3.time.scale()
-								.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-				var y_scale = d3.scale.linear()
-								.domain([0, y_max]).range([chart_height, 0]);
-				var color = d3.scale.linear()
-						    .domain([0, 2])
-						    .range(["#aad", "#556"]);
-			}
-			// video data is a stacked chart so these variables need to be different than those belonging
-			// to problem data
-			else if (data_types[i] == "video_data") {
-				var stack = d3.layout.stack();
-				var separate_data = stack(data[data_types[i]].stacked_data)
-
-				var y_stack_max = d3.max(separate_data, function(layer) {
-							return d3.max(layer, function(d) { return d.y +d.y0; })
-						});
-
-				var y_group_max = d3.max(separate_data, function(layer) { return d3.max(layer, function(d) { return d.y })})
-
-				var x_scale = d3.scale.ordinal()
-								.domain(d3.range(separate_data[0].length)).rangeBands([0, chart_width]);
-				var x_label_scale = d3.time.scale()
-								.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-				var y_scale = d3.scale.linear()
-								.domain([0, y_stack_max]).range([chart_height, 0]);
-				// var color = ["#9467bd", "#c5b0d5", "#e377c2", "#f7b6d2", "#c7c7c7"]
-				var color = d3.scale.category20b()
-				var legend_text = ["Video 1", "Video 2", "Video 3", "Video 4", "Video 5"]
-				
-			}
-
+			var x_scale = d3.scale.ordinal()
+							.domain(d3.range(separate_data.length)).rangeBands([0, chart_width]);
+			var x_label_scale = d3.time.scale()
+							.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+			var y_scale = d3.scale.linear()
+							.domain([0, y_max]).range([chart_height, 0]);
+			var color = d3.scale.linear()
+					    .domain([0, 2])
+					    .range(["#aad", "#556"]);
 
 			// create a container for y-axis markings. This is recreated each time the graph is redrawn.
 			var constant_labels = d3.select(".chart-div")
@@ -170,13 +120,24 @@ var separate_charts = (function() {
 
 			// make day labels for x axis
 			if (!average) {
-				var xAxis = d3.svg.axis()
-				    .scale(x_label_scale)
-				    .orient('bottom')
-				    .ticks(d3.time.days, 1)
-				    .tickFormat(d3.time.format('%a %d'))
-				    .tickSize(0)
-				    .tickPadding(50);
+				if(data.problem_data.length > 200 && outer_width == parseInt($('.all-charts-holder').css("width").substring(-2))) {
+					var xAxis = d3.svg.axis()
+					    .scale(x_label_scale)
+					    .orient('bottom')
+					    .ticks(d3.time.days, 1)
+					    .tickFormat(d3.time.format(''))
+					    .tickSize(0)
+					    .tickPadding(50);
+				} else {
+					var xAxis = d3.svg.axis()
+					    .scale(x_label_scale)
+					    .orient('bottom')
+					    .ticks(d3.time.days, 1)
+					    .tickFormat(d3.time.format('%a %d'))
+					    .tickSize(0)
+					    .tickPadding(50);
+				}
+				
 			} else {
 				var xAxis = d3.svg.axis()
 				    .scale(x_label_scale)
@@ -216,16 +177,18 @@ var separate_charts = (function() {
 
 			// create week landmark lines
 			if (data.problem_data.length > 200) {
-				chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+				chart.selectAll(".week-label line").data(x_label_scale.ticks(d3.time.weeks, 1))
 				.enter().append("line")
+					.attr("class", "week-label")
 					.attr("x1", x_label_scale)
 					.attr("x2", x_label_scale)
 					.attr("y1", chart_height + 5)
 					.attr("y2", 0)
 					.attr("opacity", ".5");
 
-			chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+			chart.selectAll(".week-label text").data(x_label_scale.ticks(d3.time.weeks, 1))
 				.enter().append("text")
+					.attr("class", "week-label-text")
 					.attr("x", x_label_scale)
 					.attr("y", -3)
 					.attr("opacity", ".5")
@@ -235,7 +198,7 @@ var separate_charts = (function() {
 			// create landmark line for each assignment
 			for (date in due_dates) {
 				var first_day = new Date(data.first_event.getTime())
-				data_process.round_date(first_day)
+				round_date(first_day)
 				first_day.setHours(0)
 				var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000));
 				var dueTick = chart.append("g")
@@ -256,15 +219,23 @@ var separate_charts = (function() {
 			}	
 			
 			// create y-axis label and bars for problem data chart
-			if (data_types[i] == "problem_data") {
-				
-				constant_labels.append("text")
+				if (data_types[i] == "problem_data") {
+					constant_labels.append("text")
 			        .attr("transform", "rotate(-90)")
 			        .attr("y", -10)
 			        .attr("x", 0 - (outer_height / 2) + 15)
 			        .attr("dy", "1em")
 			        .style("text-anchor", "middle")
 			        .text("Problem Attempts");
+				} else {
+					constant_labels.append("text")
+			        .attr("transform", "rotate(-90)")
+			        .attr("y", -10)
+			        .attr("x", 0 - (outer_height / 2) + 15)
+			        .attr("dy", "1em")
+			        .style("text-anchor", "middle")
+			        .text("Minutes of Video Watched");
+				}
 
 				var layer_group = chart.selectAll(".layer").data([separate_data])
 								.enter().append('g')
@@ -276,72 +247,19 @@ var separate_charts = (function() {
 									.attr("x", function(d, i) { return x_scale(i) })
 									.attr("y", function(d) {return y_scale(d.y)})
 									.attr("width", x_scale.rangeBand())
-									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
-			}
-			// create y-axis label, legend, and stacked bars for video data chart
-			else if (data_types[i] == "video_data") {
-				
-				constant_labels.append("text")
-			        .attr("transform", "rotate(-90)")
-			        .attr("y", -10)
-			        .attr("x", 0 - (outer_height / 2) + 15)
-			        .attr("dy", "1em")
-			        .style("text-anchor", "middle")
-			        .text("Total Minutes Watched");
-
-				var legend = d3.select(".chart-div")
-						.append("svg")
-							.attr("class", "legend")
-							.attr("height", outer_height)
-							.attr("width", "10%")
-							.attr("position", "relative")
-							.attr("float", "right")
-						.append("g")
-							.attr("y", 25)
-							.attr("class", "legend-holder");
-
-				legend.selectAll("rect")
-						.data(separate_data)
-						.enter()
-					.append("rect")
-						.attr("x", 0)
-						.attr("y", function(d, i) { return i * 20 + 20; })
-						.attr("width", 10)
-						.attr("height", 10)
-						.style("fill", function(d, i) { return color(i); });
-
-				legend.selectAll("text")
-						.data(separate_data)
-						.enter()
-					.append("text")
-						.attr("x", 12)
-						.attr("y", function(d, i) { return i * 20 + 30; })
-						.attr("font-size", "9px")
-						.text(function(d, i) {return legend_text[i];});
-
-				var layer_group = chart.selectAll(".layer").data(separate_data)
-								.enter().append('g')
-									.attr("class", "layer")
-									.style("fill", function(d, i) {return color(i);});
-
-				var rects = layer_group.selectAll("rect").data(function(d) { return d; })
-						.enter().append("rect")
-							.attr("x", function(d, i) { return x_scale(i) })
-							.attr("y", function(d) {return y_scale(d.y0 + d.y)})
-							.attr("width", x_scale.rangeBand())
-							.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
-			}
+									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})			
 		}
+		return {"video_events": data.video_events, "problem_events": data.problem_events}
 
 	}
 	// called when data is filtered
-	var redraw = function(data, average) {
-
+	var redraw = function(data, average, zoom) {
+		currentData = data
 		for (var i = 0; i < data_types.length; i++) {
 			
 			// data.first_event is undefined if the filtered data set is empty.
 			// sets all bars to zero but doesn't change any labels.
-			if (data.first_event == undefined) {
+			if (data.video_data.length == 0 && data.problem_data.length == 0) {
 
 				var layer_groups = d3.select("."+data_types[i]+"_chart").select('.chart').selectAll(".layer")
 			
@@ -352,39 +270,26 @@ var separate_charts = (function() {
 					.attr("y", chart_height)
 
 			} else {
-
-				if (data_types[i] == "problem_data") {
-				
-					var separate_data = data[data_types[i]]
-
-					var y_max = d3.max(separate_data, function(d) {return d.y;})
-
-					var x_scale = d3.scale.ordinal()
-									.domain(d3.range(separate_data.length)).rangeBands([0, chart_width]);
-					var x_label_scale = d3.time.scale()
-									.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-					var y_scale = d3.scale.linear()
-									.domain([0, y_max]).range([chart_height, 0]);
+				if (zoom == "zoom") {
+					d3.selectAll(".chart").attr("width", 3*parseInt($('.all-charts-holder').css("width").substring(-2)))
+					outer_width = 3*parseInt($('.all-charts-holder').css("width").substring(-2));
+					chart_width = outer_width - margin.left - margin.right;
+				} 
+				else if (zoom == "fit") {
+					d3.selectAll(".chart").attr("width", parseInt($('.all-charts-holder').css("width").substring(-2)))
+					outer_width = parseInt($('.all-charts-holder').css("width").substring(-2));
+					chart_width = outer_width - margin.left - margin.right;
 				}
-				else if (data_types[i] == "video_data") {
-					var stack = d3.layout.stack();
-					var separate_data = stack(data[data_types[i]].stacked_data)
+				var separate_data = data[data_types[i]]
 
-					var y_stack_max = d3.max(separate_data, function(layer) {
-								return d3.max(layer, function(d) { return d.y +d.y0; })
-							});
+				var y_max = d3.max(separate_data, function(d) {return d.y;})
 
-					var y_group_max = d3.max(separate_data, function(layer) { return d3.max(layer, function(d) { return d.y })})
-
-					var x_scale = d3.scale.ordinal()
-									.domain(d3.range(separate_data[0].length)).rangeBands([0, chart_width]);
-					var x_label_scale = d3.time.scale()
-									.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
-					var y_scale = d3.scale.linear()
-									.domain([0, y_stack_max]).range([chart_height, 0]);
-
-					
-				}
+				var x_scale = d3.scale.ordinal()
+								.domain(d3.range(separate_data.length)).rangeBands([0, chart_width]);
+				var x_label_scale = d3.time.scale()
+								.domain([data.first_event, data.last_event]).range([0, chart_width]).nice(d3.time.day);
+				var y_scale = d3.scale.linear()
+								.domain([0, y_max]).range([chart_height, 0]);
 
 				var chart_holder = d3.select("."+data_types[i]+"_chart")
 
@@ -406,9 +311,10 @@ var separate_charts = (function() {
 
 				chart.selectAll(".y-tick").data(y_scale.ticks(10))
 					.transition()
-					.duration(1000)
+					.duration(1500)
 						.attr("y1", y_scale)
 						.attr("y2", y_scale)
+						.attr("x2", chart_width)
 						.attr("opacity", ".5")
 
 				chart.selectAll(".y-tick").data(y_scale.ticks(10)).exit().remove()
@@ -434,13 +340,23 @@ var separate_charts = (function() {
 				chart.selectAll('.x-ticks').remove();
 
 				if (!average) {
-					var xAxis = d3.svg.axis()
-					    .scale(x_label_scale)
-					    .orient('bottom')
-					    .ticks(d3.time.days, 1)
-					    .tickFormat(d3.time.format('%a %d'))
-					    .tickSize(0)
-					    .tickPadding(50);
+					if(data.problem_data.length > 200 && outer_width == parseInt($('.all-charts-holder').css("width").substring(-2))) {
+						var xAxis = d3.svg.axis()
+						    .scale(x_label_scale)
+						    .orient('bottom')
+						    .ticks(d3.time.days, 1)
+						    .tickFormat(d3.time.format(''))
+						    .tickSize(0)
+						    .tickPadding(50);
+					} else {
+						var xAxis = d3.svg.axis()
+						    .scale(x_label_scale)
+						    .orient('bottom')
+						    .ticks(d3.time.days, 1)
+						    .tickFormat(d3.time.format('%a %d'))
+						    .tickSize(0)
+						    .tickPadding(50);
+				}
 				} else {
 					var xAxis = d3.svg.axis()
 					    .scale(x_label_scale)
@@ -473,7 +389,7 @@ var separate_charts = (function() {
 				chart.selectAll(".date-tick").remove()
 				for (date in due_dates) {
 					var first_day = new Date(data.first_event.getTime())
-					data_process.round_date(first_day)
+					round_date(first_day)
 					first_day.setHours(0)
 					if (data.problem_data.length > 200) {
 						var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 5;
@@ -496,49 +412,51 @@ var separate_charts = (function() {
 						.attr('opacity', '.5')
 						.text(date);
 				}
+				// create week landmark lines
+				chart.selectAll('.week-label').remove()
+				chart.selectAll('.week-label-text').remove()
+				if (data.problem_data.length > 200) {
+					chart.selectAll(".week-label line").data(x_label_scale.ticks(d3.time.weeks, 1))
+					.enter().append("line")
+						.attr("class", "week-label")
+						.attr("x1", x_label_scale)
+						.attr("x2", x_label_scale)
+						.attr("y1", 10)
+						.attr("y2", chart_height)
+						.attr('transform', 'translate(20,5)')
+						.attr("opacity", ".5");
+
+				chart.selectAll(".week-label text").data(x_label_scale.ticks(d3.time.weeks, 1))
+					.enter().append("text")
+						.attr("class", "week-label-text")
+						.attr("x", x_label_scale)
+						.attr("y", 10)
+						.attr("opacity", ".5")
+						.attr('transform', 'translate(20,5)')
+						.text(function(d, i) {return "Week " + (i+1);});
+				}
 
 
 				// resize bars based on filtered data
-				if (data_types[i] == "problem_data") {
-					var layer_group = chart.selectAll(".layer").data([separate_data])
+				var layer_group = chart.selectAll(".layer").data([separate_data])
+				layer_group.selectAll("rect").data(function(d) {return d;})
+					.enter().append("rect")
+						.attr("x", function(d, i) { return x_scale(i) })
+						.attr("y", function(d) {return y_scale(d.y)})
+						.attr("width", 0)
+						.attr("height", 0)
 
-					layer_group.selectAll("rect").data(function(d) {return d;})
-						.enter().append("rect")
-							.attr("x", function(d, i) { return x_scale(i) })
-							.attr("y", function(d) {return y_scale(d.y0 + d.y)})
-							.attr("width", x_scale.rangeBand())
-
-					var rects = layer_group.selectAll("rect").data(function(d) {return d;})
-								.transition()
-								.duration(1000)
-							 		.attr("x", function(d, i) { return x_scale(i) })
-									.attr("y", function(d) {return y_scale(d.y)})
-									.attr("width", x_scale.rangeBand())
-									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
-
-					layer_group.selectAll("rect").data(function(d) {return d;})
-						.exit().remove();
-				}
-				else if (data_types[i] == "video_data") {
-					var layer_group = chart.selectAll(".layer").data(separate_data)
-
-					layer_group.selectAll("rect").data(function(d) {return d;})
-						.enter().append("rect")
-							.attr("x", function(d, i) { return x_scale(i) })
-							.attr("y", function(d) {return y_scale(d.y0 + d.y)})
-							.attr("width", x_scale.rangeBand())
-
-					var rects = layer_group.selectAll("rect").data(function(d) { return d; })
-								.transition()
-								.duration(1000)
-									.attr("x", function(d, i) { return x_scale(i) })
-									.attr("y", function(d) {return y_scale(d.y0 + d.y)})
-									.attr("width", x_scale.rangeBand())
-									.attr("height", function(d) {return y_scale(d.y0) - y_scale(d.y0 + d.y)})
-					layer_group.selectAll("rect").data(function(d) {return d;})
-						.exit().remove();
-
-				}
+				var rects = layer_group.selectAll("rect").data(function(d) {return d;})
+							.transition()
+							.duration(500)
+						 		.attr("x", function(d, i) { return x_scale(i) })
+								.attr("width", x_scale.rangeBand())
+							.transition()
+							.duration(1000)
+								.attr("y", function(d) {return y_scale(d.y)})
+								.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
+				layer_group.selectAll("rect").data(function(d) {return d;})
+					.exit().remove();
 			}
 		}
 
@@ -550,14 +468,21 @@ var separate_charts = (function() {
 
 })();
 
-var data = events_with_URL
-var cf_data = crossfilter(data)
-var by_grade = cf_data.dimension(function(d) {return d.grade;});
-var by_date = cf_data.dimension(function(d) {return new Date(d.time).valueOf();});
+var all = organize(data)
+var separated_data
+var p_grade
+var p_date
+var v_grade
+var v_date
+var currentData
 
 $(document).ready(function() {
 	$(".chart-div").each(function() {
-		separate_charts.setup(format_separated_data(data));
+		separated_data = separate_charts.setup(initial_format(all));
+		p_grade = separated_data.problem_events.dimension(function(d) {return d.grade;});
+		p_date = separated_data.problem_events.dimension(function(d) {return new Date(d.time).valueOf();});
+		v_grade = separated_data.video_events.dimension(function(d) {return d.grade;});
+		v_date = separated_data.video_events.dimension(function(d) {return new Date(d.time).valueOf();});
 	})
 })
 
