@@ -2,25 +2,6 @@
 // are due in the class. 
 var due_dates = {"PSet 1": new Date(2013, 8, 10, 21, 0, 0, 0), "PSet 2": new Date(2013, 8, 20, 21, 0, 0, 0), "Quiz 1":new Date(2013, 8, 25, 18, 0, 0, 0)}
 
-// takes a raw data variable and applies several functions from data_process in order to return
-// an object with all of the information needed to chart the data.
-// see data_process.js for function explanations
-var format_separated_data = function(data) {
-	var video_events = data_process.process_event_types(data).video_events;
-	var problem_events = data_process.process_event_types(data).problem_events;
-
-	var processed_data = data_process.format_events([problem_events, video_events]).stacked_data;
-	var problem_data = processed_data[0];
-	var video_data = data_process.video_minutes(problem_events, data_process.process_videos(video_events));
-	
-	var first_event = data_process.format_events([problem_events, video_events]).first_event;
-	var last_event = data_process.format_events([problem_events, video_events]).last_event;
-	return {"problem_data": problem_data,
-			"video_data": video_data,
-			"first_event": first_event,
-			"last_event": last_event};
-}
-
 // contains function to create separate charts for video and problem events
 var separate_charts = (function() {
 
@@ -41,15 +22,18 @@ var separate_charts = (function() {
 	// data is the data object returned by a data_process function, average is a boolean value representing
 	// whether or not the data being charted is averaged over multiple weeks or not
 	var setup = function(data, average) {
-
+		currentData = data
 		// set chart width depending on how long of a data set we are charting
+		$(".chart-div").append($("<div class='all-charts-holder'></div>"))
 		if (data.problem_data.length < 200) {
-			outer_width = 800;
+			$('.zoom').val('fit')
+			outer_width = parseInt($('.all-charts-holder').css("width").substring(-2));
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
 		if(data.problem_data.length > 200) {
-			outer_width = 3000;
+			$('.zoom').val('fit')
+			outer_width = parseInt($('.all-charts-holder').css("width").substring(-2));
 			chart_width = outer_width - margin.left - margin.right;
 		}
 
@@ -182,16 +166,18 @@ var separate_charts = (function() {
 
 			// create week landmark lines
 			if (data.problem_data.length > 200) {
-				chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+				chart.selectAll(".week-label line").data(x_label_scale.ticks(d3.time.weeks, 1))
 				.enter().append("line")
+					.attr("class", "week-label")
 					.attr("x1", x_label_scale)
 					.attr("x2", x_label_scale)
 					.attr("y1", chart_height + 5)
 					.attr("y2", 0)
 					.attr("opacity", ".5");
 
-			chart.selectAll(".week-label").data(x_label_scale.ticks(d3.time.weeks, 1))
+			chart.selectAll(".week-label text").data(x_label_scale.ticks(d3.time.weeks, 1))
 				.enter().append("text")
+					.attr("class", "week-label-text")
 					.attr("x", x_label_scale)
 					.attr("y", -3)
 					.attr("opacity", ".5")
@@ -256,8 +242,8 @@ var separate_charts = (function() {
 
 	}
 	// called when data is filtered
-	var redraw = function(data, average) {
-
+	var redraw = function(data, average, zoom) {
+		currentData = data
 		for (var i = 0; i < data_types.length; i++) {
 			
 			// data.first_event is undefined if the filtered data set is empty.
@@ -273,7 +259,16 @@ var separate_charts = (function() {
 					.attr("y", chart_height)
 
 			} else {
-				
+				if (zoom == "zoom") {
+					d3.selectAll(".chart").attr("width", 3*parseInt($('.all-charts-holder').css("width").substring(-2)))
+					outer_width = 3*parseInt($('.all-charts-holder').css("width").substring(-2));
+					chart_width = outer_width - margin.left - margin.right;
+				} 
+				else if (zoom == "fit") {
+					d3.selectAll(".chart").attr("width", parseInt($('.all-charts-holder').css("width").substring(-2)))
+					outer_width = parseInt($('.all-charts-holder').css("width").substring(-2));
+					chart_width = outer_width - margin.left - margin.right;
+				}
 				var separate_data = data[data_types[i]]
 
 				var y_max = d3.max(separate_data, function(d) {return d.y;})
@@ -305,9 +300,10 @@ var separate_charts = (function() {
 
 				chart.selectAll(".y-tick").data(y_scale.ticks(10))
 					.transition()
-					.duration(1000)
+					.duration(1500)
 						.attr("y1", y_scale)
 						.attr("y2", y_scale)
+						.attr("x2", chart_width)
 						.attr("opacity", ".5")
 
 				chart.selectAll(".y-tick").data(y_scale.ticks(10)).exit().remove()
@@ -395,25 +391,49 @@ var separate_charts = (function() {
 						.attr('opacity', '.5')
 						.text(date);
 				}
+				// create week landmark lines
+				chart.selectAll('.week-label').remove()
+				chart.selectAll('.week-label-text').remove()
+				if (data.problem_data.length > 200) {
+					chart.selectAll(".week-label line").data(x_label_scale.ticks(d3.time.weeks, 1))
+					.enter().append("line")
+						.attr("class", "week-label")
+						.attr("x1", x_label_scale)
+						.attr("x2", x_label_scale)
+						.attr("y1", 10)
+						.attr("y2", chart_height)
+						.attr('transform', 'translate(20,5)')
+						.attr("opacity", ".5");
+
+				chart.selectAll(".week-label text").data(x_label_scale.ticks(d3.time.weeks, 1))
+					.enter().append("text")
+						.attr("class", "week-label-text")
+						.attr("x", x_label_scale)
+						.attr("y", 10)
+						.attr("opacity", ".5")
+						.attr('transform', 'translate(20,5)')
+						.text(function(d, i) {return "Week " + (i+1);});
+				}
 
 
 				// resize bars based on filtered data
 				var layer_group = chart.selectAll(".layer").data([separate_data])
-
 				layer_group.selectAll("rect").data(function(d) {return d;})
 					.enter().append("rect")
 						.attr("x", function(d, i) { return x_scale(i) })
-						.attr("y", function(d) {return y_scale(d.y0 + d.y)})
-						.attr("width", x_scale.rangeBand())
+						.attr("y", function(d) {return y_scale(d.y)})
+						.attr("width", 0)
+						.attr("height", 0)
 
 				var rects = layer_group.selectAll("rect").data(function(d) {return d;})
 							.transition()
-							.duration(1000)
+							.duration(500)
 						 		.attr("x", function(d, i) { return x_scale(i) })
-								.attr("y", function(d) {return y_scale(d.y)})
 								.attr("width", x_scale.rangeBand())
+							.transition()
+							.duration(1000)
+								.attr("y", function(d) {return y_scale(d.y)})
 								.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
-
 				layer_group.selectAll("rect").data(function(d) {return d;})
 					.exit().remove();
 			}
@@ -427,12 +447,13 @@ var separate_charts = (function() {
 
 })();
 
-var all = organize()
+var all = organize(data)
 var separated_data
 var p_grade
 var p_date
 var v_grade
 var v_date
+var currentData
 
 $(document).ready(function() {
 	$(".chart-div").each(function() {
