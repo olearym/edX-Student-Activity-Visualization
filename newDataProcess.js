@@ -1,3 +1,4 @@
+// give event types numerical values so they can be filtered with crossfilter
 var eventValue = function(event_type) {
 	if (event_type == "play_video" || event_type == "pause_video") {
 		return 0
@@ -18,19 +19,30 @@ var round_date = function(date) {
 }
 
 var data = events_with_URL
-var cf_data = crossfilter(data)
-var by_grade = cf_data.dimension(function(d) {return d.grade;});
-var by_date = cf_data.dimension(function(d) {return new Date(d.time).valueOf();});
-var by_type = cf_data.dimension(function(d) {return eventValue(d.event_type);});
 
-var organize = function() {
+// separates data into video event data and problem event data 
+// takes the argument "data", which is an array of event objects
+// that follow the edX tracking logs format
+// currently using randomly generated data, with each object having
+// username, time, and event_type properties (video_play and video_pause
+// events have a URL property as well)
+// adds the "minutes" property to video events, assumes that every video_play
+// event is followed by a video_pause event.
+// returns the separated data and the first and last events
+var organize = function(data) {
 
+	// create a crossfilter for the data, give it an event_type dimension
+	var cf_data = crossfilter(data)
+	var by_type = cf_data.dimension(function(d) {return eventValue(d.event_type);});
+
+	// create problem_data and video_data using crossfilter
 	by_type.filter(1)
 	problem_data = by_type.top(Infinity)
 	by_type.filterAll()
 	by_type.filter(0)
 	video_data = by_type.top(Infinity)
 
+	// sort problem_data and video_data so the events are in chronological order
 	problem_data.sort(function(a,b){
 		  a = new Date(a.time);
 		  b = new Date(b.time);
@@ -42,6 +54,11 @@ var organize = function() {
 		  return a<b?-1:a>b?1:0;
 		});
 
+	// give each video event a "minutes" property. If both the play and
+	// pause events occur in the same hour, the pause event contains all the minutes
+	// if they occur in different hours, minutes before the hour change
+	// are added to the play event and minutes after the hour change are added to
+	// the pause event
 	var unpaused = {}
 	for (var i = 0; i < video_data.length; i++) {
 		var user = video_data[i].username
@@ -69,6 +86,7 @@ var organize = function() {
 		}
 	}
 
+	// find the first and last events of the data set
 	var first_event =  video_data[0]
 	if (new Date(problem_data[0].time).getTime() < new Date(video_data[0].time).getTime()) {
 		first_event = problem_data[0]
@@ -83,6 +101,10 @@ var organize = function() {
 			"last_event": last_event}
 }
 
+// double nests the data, first nesting is into days
+// and second nesting is into hours
+// if a day is not full, insert the missing hours at the correct index
+// and give it a value of []
 var nest_days = function(data) {
 	var nest = d3.nest().key(function(d) {
 		var event_date = new Date(d.time);
@@ -108,6 +130,9 @@ var nest_days = function(data) {
 	return nest
 }
 
+// takes a nest of events and counts the number of events in each hour
+// returns an array of objects with "y" attributes, used to graph with d3
+// format of objects allows for creating stacked bar charts in d3
 var count_events = function(days) {
 	var out = []
 	for (var i = 0; i < days.length; i++){
@@ -118,6 +143,9 @@ var count_events = function(days) {
 	return out
 }
 
+// takes a nest of video events and counts the number of minutes in each hour
+// returns an array of objects with "y" attributes, used to graph with d3
+// format of objects allows for creating stacked bar charts in d3
 var count_minutes = function(days) {
 	var out = []
 	for (var i = 0; i < days.length; i++){
@@ -134,6 +162,11 @@ var count_minutes = function(days) {
 	return out
 }
 
+// "all" is an object in the form returned by organize
+// returns an object with video and problem data in a format that separate_charts.setup
+// can use
+// problem_events and video_events are crossfilters of the separated data returned
+// by organize, these are returned to be used the filter functions
 var initial_format = function(all) {
 	var video_data = count_minutes(nest_days(all.video_data))
 	var problem_data = count_events(nest_days(all.problem_data))
@@ -150,6 +183,8 @@ var initial_format = function(all) {
 			"problem_events": problem_events}
 }
 
+// takes a grade range (array of numbers between 0 and 100 of length 2)
+// and a time range (array of Date objects of length 2)
 var filter_format = function(grade_range, time_range) {
 
 	if (time_range != "all") {
