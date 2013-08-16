@@ -17,12 +17,6 @@
 	stroke: #ccc;
 }
 
-.chart-holder {
-/*	width: 80%;*/
-	/*position: relative;*/
-/*	top: -200px;*/
-/*	right: -8%;*/
-}
 .chart-div {
 	width: 80%;
 	border: 1px solid gray;
@@ -40,7 +34,7 @@
         
 }
 #grade-slider{
-    width:50%;
+    width:40%;
     position:relative;
     left:109px;
     top:5px;
@@ -60,12 +54,13 @@
 }
 #amount{
     position:relative;
-    left:75%;
+    left:63%;
     top:5px;
     
 }
 
 .time{
+	width: 50%;
     font-size:12pt;
 }
 
@@ -115,8 +110,7 @@
 }
 
 .filter-div .filters {
-	padding-left: 10px;
-	padding-right: 10px;
+	overflow: hidden;
 }
 
 .filter-div .manager-filter-title {
@@ -124,11 +118,30 @@
 	color: white;
 	background-color: #8080a2;
 	padding: 3px;
+	margin: 0px;
+}
+
+.filter-div #time {
+	margin: 5px;
+}
+.filter-div #grade-slider {
+	margin: 5px;
+}
+
+.filter-div #zoom {
+	margin: 5px;
 }
 
 .filter-div .manager {
-	padding-left: 10px;
-	padding-right: 10px;
+	overflow: hidden;
+}
+
+.filter-div #landmark {
+	margin : 5px;
+}
+
+.filter-div .landmark-remove-label {
+	margin: 5px;
 }
 
 .title {
