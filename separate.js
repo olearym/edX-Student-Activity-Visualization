@@ -299,7 +299,7 @@ var separate_charts = (function() {
 				// redraw y-axis tickmarks
 				//d3.select("."+data_types[i]+"_chart").selectAll("line").remove()
 
-				chart.selectAll(".y-tick line").data(y_scale.ticks(10))
+				var line = chart.selectAll(".y-tick line").data(y_scale.ticks(10))
 					.enter().append("line")
 						.attr("class", "y-tick")
 						.attr("x1", 0)
@@ -387,30 +387,32 @@ var separate_charts = (function() {
 				    .call(xTicks);
 
 				chart.selectAll(".date-tick").remove()
-				for (date in due_dates) {
-					var first_day = new Date(data.first_event.getTime())
-					round_date(first_day)
-					first_day.setHours(0)
-					if (data.problem_data.length > 200) {
-						var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 5;
-					} else {
-						var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 3;
-					}
-					var dueTick = chart.append("g")
-									.attr("class", "date-tick")
-									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(16)+')');
-					var dueMark = chart.append("g")
-									.attr("class", "date-tick")
-									.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+14)+')');
-					dueMark.append("line")
-						.attr("y1", 0)
-						.attr("y2", -chart_height + 5)
-						.attr("opacity", ".8");
+				if (!average) {
+					for (date in due_dates) {
+						var first_day = new Date(data.first_event.getTime())
+						round_date(first_day)
+						first_day.setHours(0)
+						if (data.problem_data.length > 200) {
+							var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 5;
+						} else {
+							var diff_hours = Math.floor((due_dates[date].getTime() - first_day.getTime())/(3600*1000)) + 3;
+						}
+						var dueTick = chart.append("g")
+										.attr("class", "date-tick")
+										.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(16)+')');
+						var dueMark = chart.append("g")
+										.attr("class", "date-tick")
+										.attr("transform", 'translate('+x_scale.rangeBand() * (diff_hours)+', '+(chart_height+14)+')');
+						dueMark.append("line")
+							.attr("y1", 0)
+							.attr("y2", -chart_height + 5)
+							.attr("opacity", ".8");
 
-					dueTick.append('text')
-						.attr("text-anchor", "middle")
-						.attr('opacity', '.5')
-						.text(date);
+						dueTick.append('text')
+							.attr("text-anchor", "middle")
+							.attr('opacity', '.5')
+							.text(date);
+					}
 				}
 				// create week landmark lines
 				chart.selectAll('.week-label').remove()
@@ -457,6 +459,7 @@ var separate_charts = (function() {
 								.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
 				layer_group.selectAll("rect").data(function(d) {return d;})
 					.exit().remove();
+				console.log(chart)
 			}
 		}
 
