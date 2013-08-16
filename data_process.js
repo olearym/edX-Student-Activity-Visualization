@@ -1,4 +1,6 @@
 // give event types numerical values so they can be filtered with crossfilter
+// only specifically checks for play_video, pause_video, and problem_check, but all others
+// are given a value of 2
 var eventValue = function(event_type) {
 	if (event_type == "play_video" || event_type == "pause_video") {
 		return 0
@@ -19,6 +21,7 @@ var round_date = function(date) {
 }
 
 // data is currently randomly generated using a function from newDataGen.js
+// this variable can be replaced with real data at some point in the future
 var data = JSON.parse(makeFullData(200,200))
 
 // separates data into video event data and problem event data 
@@ -26,9 +29,12 @@ var data = JSON.parse(makeFullData(200,200))
 // that follow the edX tracking logs format
 // currently using randomly generated data, with each object having
 // username, time, and event_type properties (video_play and video_pause
-// events have a URL property as well)
+// events have a URL property as well - but this is unused in the current
+// implementation of the chart)
 // adds the "minutes" property to video events, assumes that every video_play
 // event is followed by a video_pause event.
+// if there are multiple video_play events before a video_pause event, it will use
+// the last play event 
 // returns the separated data and the first and last events
 var organize = function(data) {
 
@@ -60,6 +66,8 @@ var organize = function(data) {
 	// if they occur in different hours, minutes before the hour change
 	// are added to the play event and minutes after the hour change are added to
 	// the pause event
+	// currently minute values of over 60 minutes get set to zero, to avoid possible
+	// problems if actual edX data is used
 	var unpaused = {}
 	for (var i = 0; i < video_data.length; i++) {
 		var user = video_data[i].username
@@ -74,6 +82,9 @@ var organize = function(data) {
 			if (play.getHours() == pause.getHours()) {
 				video_data[unpaused[user][1]]["minutes"] = 0
 				video_data[i]["minutes"] = minutes
+				if (minutes > 60) {
+					video_data[i]["minutes"] = 0
+				}
 			} else {
 				var hour = new Date(video_data[i].time)
 				round_date(hour)
@@ -83,6 +94,12 @@ var organize = function(data) {
 
 				video_data[unpaused[user][1]]["minutes"] = play_minutes
 				video_data[i]["minutes"] = pause_minutes
+				if (play_minutes > 60) {
+					video_data[unpaused[user][1]]["minutes"] = 0
+				}
+				if (pause_minutes > 60) {
+					video_data[i]["minutes"] = 0
+				}
 			}
 		}
 	}
@@ -255,7 +272,8 @@ var filter_format = function(grade_range, time_range) {
 
 // works like filter_format, but the two data sets it returns are only 168 hours long.
 // the values for each of those hours is the average value of that hour over all the weeks in 
-// the data set. first_event and last_event are set as an arbitrary Sunday and Saturday at midnight
+// the data set. first_event is the day of the first event in the data set, and last_event is one
+// week later.
 var average = function(grade_range) {
 	p_grade.filterAll()
 	v_grade.filterAll()
@@ -306,9 +324,13 @@ var average = function(grade_range) {
 	}
 	video_data = video_data.slice(0, 168)
 	problem_data = problem_data.slice(0, 168)
+	var first_event = separated_data.first_event
+	round_date(first_event)
+	first_event.setHours(0)
+	var last_event = new Date(first_event.getTime() + (3600 * 1000 * 24 * 7))
 	return {"video_data": video_data,
 			"problem_data": problem_data,
-			"first_event": new Date('2013-09-01T04:00:00Z'), 
-			"last_event": new Date('2013-09-08T04:00:00Z')}
+			"first_event": first_event, 
+			"last_event": last_event}
 }
 
