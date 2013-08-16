@@ -20,6 +20,11 @@ var round_date = function(date) {
 
 }
 
+// controls the number of minutes each video event is allowed to have.
+// if a video event has more than this, it will not be charted.
+// this prevents problems that may arise with the way play and pause events are generated
+var session_limit = 60
+
 // data is currently randomly generated using a function from newDataGen.js
 // this variable can be replaced with real data at some point in the future
 var data = JSON.parse(makeFullData(200,200))
@@ -82,7 +87,7 @@ var organize = function(data) {
 			if (play.getHours() == pause.getHours()) {
 				video_data[unpaused[user][1]]["minutes"] = 0
 				video_data[i]["minutes"] = minutes
-				if (minutes > 60) {
+				if (minutes > session_limit) {
 					video_data[i]["minutes"] = 0
 				}
 			} else {
@@ -94,10 +99,10 @@ var organize = function(data) {
 
 				video_data[unpaused[user][1]]["minutes"] = play_minutes
 				video_data[i]["minutes"] = pause_minutes
-				if (play_minutes > 60) {
+				if (play_minutes > session_limit) {
 					video_data[unpaused[user][1]]["minutes"] = 0
 				}
-				if (pause_minutes > 60) {
+				if (pause_minutes > session_limit) {
 					video_data[i]["minutes"] = 0
 				}
 			}
