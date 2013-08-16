@@ -56,6 +56,7 @@ var separate_charts = (function() {
 			var y_scale = d3.scale.linear()
 							.domain([0, y_max]).range([chart_height, 0]);
 			var color = d3.scale.linear()
+
 					    .domain([0, 2])
 					    .range(["#aad", "#556"]);
 
@@ -249,7 +250,7 @@ var separate_charts = (function() {
 									.attr("width", x_scale.rangeBand())
 									.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})			
 		}
-		return {"video_events": data.video_events, "problem_events": data.problem_events}
+		return {"video_events": data.video_events, "problem_events": data.problem_events, "first_event": data.first_event, "last_event": data.last_event}
 
 	}
 	// called when data is filtered
@@ -459,7 +460,6 @@ var separate_charts = (function() {
 								.attr("height", function(d) {return y_scale(0) - y_scale(d.y)})
 				layer_group.selectAll("rect").data(function(d) {return d;})
 					.exit().remove();
-				console.log(chart)
 			}
 		}
 
