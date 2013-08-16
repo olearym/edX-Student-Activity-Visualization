@@ -18,7 +18,8 @@ var round_date = function(date) {
 
 }
 
-var data = events_with_URL
+// data is currently randomly generated using a function from newDataGen.js
+var data = JSON.parse(makeFullData(200,200))
 
 // separates data into video event data and problem event data 
 // takes the argument "data", which is an array of event objects
