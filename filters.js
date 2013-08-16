@@ -8,7 +8,7 @@ var setupFilters= function(){
     // html for filter interface
     var filter_label = $("<div class='filters'><div class='filter-title'><big>Filters</big></div></div>")
     var timeFilterBar = $("<div id='time'>Time Range:<select class='time'><option value='all'>All</option><option value='compWeek'>Average Week</option><option value='2013-09-01T04:00:00Z,2013-09-08T04:00:00Z'>Week 1: 09/01 - 09/07</option><option value='2013-09-08T04:00:00Z,2013-09-15T04:00:00Z'>Week 2: 09/08 - 09/14</option><option value='2013-09-15T04:00:00,2013-09-22T04:00:00Z'>Week 3: 09/15 - 09/21</option><option value='2013-09-22T04:00:00Z,2013-09-29T04:00:00Z'>Week 4: 09/22 - 09/28</option></select></div>")
-    var gradeFilter = $("<div id='grade-slider'><span class='grade-title'>Grade Range:</span></div><div><input type='text' id='amount' style='border: 0; color: #000000;'></input></div>")
+    var gradeFilter = $("<div id='grade-slider'><span class='grade-title'>Grade Range:</span></div><div><div id='amount' style='border: 0; color: #000000;'>0 - 100</div></div>")
     var zoom = $("<div id='zoom'>View:<select class='zoom'><option value='fit'>View All</option><option value='zoom'>Zoom in<option></select></div>")
     var landmark_manager = $("<div class='manager'><div class='manager-filter-title'><big>Landmark Manager</big></div></div>")
     var landmark = $("<div id='landmark'><u>New Landmark:</u></div>")
@@ -80,7 +80,7 @@ var setupFilters= function(){
           max: 100,
           values: [0, 100 ],
           slide: function(event, ui) {
-            $( "#amount" ).val( + ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+            $( "#amount" ).html( + ui.values[ 0 ] + " - " + ui.values[ 1 ] );
           },
           stop: function(event, ui) {
             applyFilters();
@@ -137,9 +137,13 @@ var applyFilters=function(){
         }
     }
     else{
-        if (timeFilter == 'compWeek') {
+        if (timeFilter !== 'all') {
             $('.zoom').val("fit")
-            separate_charts.redraw(filtered_data, true, "fit")
+            if (timeFilter == "compWeek") {
+                separate_charts.redraw(filtered_data, true, "fit") 
+            } else {
+                separate_charts.redraw(filtered_data, false, "fit")
+            }
         } else {
             separate_charts.redraw(filtered_data, false, zoom)
         }
