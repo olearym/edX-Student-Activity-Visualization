@@ -36,7 +36,7 @@
 #grade-slider{
     width:35%;
     position:relative;
-    left:80px;
+    left:100px;
     top:5px;
     font-family:serif;
     font-size:none;
@@ -45,7 +45,7 @@
 
 .grade-title{
     position:relative;
-    left:-80px;
+    left:-100px;
     top:-4px;
     font-weight:normal;
     font-size:12pt;
