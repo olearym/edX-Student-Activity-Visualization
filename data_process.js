@@ -1,3 +1,12 @@
+// data is currently randomly generated using a function from newDataGen.js
+// this variable can be replaced with real data at some point in the future
+var data = JSON.parse(makeFullData(200,200))
+
+// controls the number of minutes each video event is allowed to have.
+// if a video event has more than this, it will not be charted.
+// this prevents problems that may arise with the way play and pause events are generated
+var session_limit = 60
+
 // give event types numerical values so they can be filtered with crossfilter
 // only specifically checks for play_video, pause_video, and problem_check, but all others
 // are given a value of 2
@@ -19,15 +28,6 @@ var round_date = function(date) {
 	date.setMilliseconds(0);
 
 }
-
-// controls the number of minutes each video event is allowed to have.
-// if a video event has more than this, it will not be charted.
-// this prevents problems that may arise with the way play and pause events are generated
-var session_limit = 60
-
-// data is currently randomly generated using a function from newDataGen.js
-// this variable can be replaced with real data at some point in the future
-var data = JSON.parse(makeFullData(200,200))
 
 // separates data into video event data and problem event data 
 // takes the argument "data", which is an array of event objects
