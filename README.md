@@ -1,7 +1,7 @@
 edX Student Activity Visualization
 ==================================
 
-###Introduction
+### Introduction
 
 This edX Student Activity Visualization consists of two charts that measure students' use
 of videos and practice problems. The first chart measures student problem activity by 
@@ -11,9 +11,9 @@ hour over the entire course. Currently, instead of using actual edX tracking log
 the visualization uses randomly generated data that is formatted in the same way as the edX tracking logs.
 
 
-###Instructions
+### Instructions
 
-#####Files
+##### Files
 
 You will need the following files:
 	
@@ -27,7 +27,7 @@ If you are not planning to replace the random data, you will also need the follo
 
 	newDataGen.js
 
-#####HTML Instructions
+##### HTML Instructions
 
 Include the following block in the head of your HTML file:
 
@@ -49,13 +49,13 @@ In the body of your HTML file, where you want the chart to appear, include the f
 	<div class="chart-div"></div>
     <div class="filter-div"></div>
 
-#####Choosing Charted Data
+##### Choosing Charted Data
 
 On the line 3 of data_process.js, there is a variable named data, which currently calls a function from
 newDataGen.js that generates approximately 50000 random tracking logs events. You can replace this function with
 your own data. Your data should be an array of objects, where the objects are edX tracking logs events that at minimum
 have time, user, and event_type properties.
 
-#####Some Concerns
+##### Some Concerns
 This visualization was developed using randomly generated data. As such, we made some assumptions in our processing functions which may or may not be problematic when they are run on real data. In addition, the visualization is very
 slow to process data that contains more than 100000 events.
